@@ -33,7 +33,7 @@ public class User {
     private String lastName;
 
     @Column(name = "neptun_code")
-    private int neptunCode;
+    private String neptunCode;
 
     @Column(name = "email")
     private String email;
@@ -60,9 +60,7 @@ public class User {
         this.userId = userId;
     }
 
-    public User(int userId, String userName, String password, String firstName,
-                String lastName, int neptunCode, String email, Date created,
-                Date lastUpdated, Boolean isActive, Long educationId, String country, int socialSecurityNumber) {
+    public User(int userId, String userName, String password, String firstName, String lastName, String neptunCode, String email) {
         this.userId = userId;
         this.userName = userName;
         this.password = password;
@@ -70,12 +68,6 @@ public class User {
         this.lastName = lastName;
         this.neptunCode = neptunCode;
         this.email = email;
-        this.created = created;
-        this.lastUpdated = lastUpdated;
-        this.isActive = isActive;
-        this.educationId = educationId;
-        this.country = country;
-        this.socialSecurityNumber = socialSecurityNumber;
     }
 
     public User() {

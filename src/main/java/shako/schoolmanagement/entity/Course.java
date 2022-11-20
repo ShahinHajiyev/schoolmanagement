@@ -16,10 +16,13 @@ import java.util.List;
 @AllArgsConstructor
 public class Course {
 
+    // ToDo : check the studentid, teacherid relationships with other tables if they work or not. Inheritance thing, there is not an id in those classes, only in tables.
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "courseId")
     private int courseId;
+
 
     @Column(name = "course_name")
     private String courseName;

@@ -5,6 +5,7 @@ import lombok.Data;
 import net.bytebuddy.implementation.bind.annotation.SuperCall;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -16,15 +17,25 @@ public class Student extends User{
     private int rollNumber;
 
     @Column(name = "graduation_year")
-    private Date graduationYear;
+    private LocalDateTime graduationYear;
 
-    public Student(int userId, int rollNumber, Date graduationYear) {
-        super(userId);
+    public Student(int userId,
+                   String userName,
+                   String password,
+                   String firstName,
+                   String lastName,
+                   String neptunCode,
+                   String email,
+                   int rollNumber,
+                   LocalDateTime graduationYear) {
+
+        super(userId, userName, password, firstName, lastName, neptunCode, email);
         this.rollNumber = rollNumber;
         this.graduationYear = graduationYear;
+
     }
 
     public Student() {
-
+      super();
     }
 }
