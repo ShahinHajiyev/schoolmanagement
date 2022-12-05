@@ -5,9 +5,9 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Entity
 @Table(name = "user")
@@ -39,7 +39,7 @@ public class User {
     private String email;
 
     @Column(name = "created")
-    private Date created;
+    private LocalDateTime created;
 
     @Column(name = "last_updated")
     private Date lastUpdated;
@@ -47,7 +47,7 @@ public class User {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    @Column(name = "educationId")
+    @Column(name = "education_id")
     private Long educationId;
 
     @Column(name = "country")
@@ -60,7 +60,15 @@ public class User {
         this.userId = userId;
     }
 
-    public User(int userId, String userName, String password, String firstName, String lastName, String neptunCode, String email) {
+    public User(int userId,
+                String userName,
+                String password,
+                String firstName,
+                String lastName,
+                String neptunCode,
+                String email,
+                LocalDateTime created) {
+
         this.userId = userId;
         this.userName = userName;
         this.password = password;
@@ -68,17 +76,19 @@ public class User {
         this.lastName = lastName;
         this.neptunCode = neptunCode;
         this.email = email;
+        this.created = created;
+
     }
 
     public User() {
     }
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name="user_role",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     @ToString.Exclude
-    private Set<Role> roles = new HashSet<>();
+    private List<Role> roles = new ArrayList<>();
 }

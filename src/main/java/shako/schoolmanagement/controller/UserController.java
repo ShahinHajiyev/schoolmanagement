@@ -1,28 +1,32 @@
 package shako.schoolmanagement.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import shako.schoolmanagement.entity.Student;
-import shako.schoolmanagement.service.StudentService;
+import shako.schoolmanagement.dto.UserDto;
+import shako.schoolmanagement.service.inter.UserService;
 
 @RestController
-@RequestMapping("/api")
-@RequiredArgsConstructor
-public class TestController {
+@RequestMapping("/api/user")
+public class UserController {
+
+
+    private final UserService userService;
 
     @Autowired
-    private final StudentService studentService;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
-    @PostMapping("/addstudent")
-    public ResponseEntity addStudent(@RequestBody Student student){
-
-        studentService.addStudent(student);
+    @PostMapping("/adduser")
+    public ResponseEntity<?> addUser(@RequestBody UserDto userDto){
+        userService.addUser(userDto);
         return ResponseEntity.ok("Student added successfully");
     }
+
+
 
 }

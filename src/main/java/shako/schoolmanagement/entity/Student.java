@@ -1,12 +1,9 @@
 package shako.schoolmanagement.entity;
 
-import lombok.Builder;
 import lombok.Data;
-import net.bytebuddy.implementation.bind.annotation.SuperCall;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @Table(name = "student")
@@ -26,13 +23,18 @@ public class Student extends User{
                    String lastName,
                    String neptunCode,
                    String email,
+                   LocalDateTime created,
                    int rollNumber,
                    LocalDateTime graduationYear) {
 
-        super(userId, userName, password, firstName, lastName, neptunCode, email);
+        super(userId, userName, password, firstName, lastName, neptunCode, email, created);
         this.rollNumber = rollNumber;
         this.graduationYear = graduationYear;
 
+    }
+
+    public Student(int userId) {
+        super(userId);
     }
 
     public Student() {
