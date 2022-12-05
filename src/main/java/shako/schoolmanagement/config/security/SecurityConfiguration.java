@@ -9,19 +9,25 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import shako.schoolmanagement.config.auth.AppUserDetailsService;
+
+import javax.sql.DataSource;
 
 @Configuration
 public class SecurityConfiguration {
 
     private final PasswordEncoder passwordEncoder;
     private final AppUserDetailsService appUserDetailsService;
+    private final DataSource dataSource;
 
 
     @Autowired
-    public SecurityConfiguration(PasswordEncoder passwordEncoder, AppUserDetailsService appUserDetailsService) {
+    public SecurityConfiguration(PasswordEncoder passwordEncoder, AppUserDetailsService appUserDetailsService, DataSource dataSource) {
         this.passwordEncoder = passwordEncoder;
         this.appUserDetailsService = appUserDetailsService;
+        this.dataSource = dataSource;
     }
 
     @Bean
@@ -58,7 +64,17 @@ public class SecurityConfiguration {
                                 .anyRequest()
                                 .authenticated()
                                 .and()
-                                .formLogin();
+                                .formLogin()
+                                    //.loginPage("/login").permitAll()
+                                .and()
+                                .rememberMe()
+                                      .tokenRepository(persistentTokenRepository())
+                                      .tokenValiditySeconds(SecurityConstants.REMEMBER_ME_EXPIRATION_TIME)
+                                .and()
+                                .logout()
+                                    .logoutUrl("/logout");
+                                //.defaultSuccessUrl()
+
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -69,4 +85,13 @@ public class SecurityConfiguration {
         //httpSecurity.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
         return httpSecurity.build();
     }
+
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository() {
+        JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+        tokenRepository.setDataSource(dataSource);
+        return tokenRepository;
+    }
+
+
 }
