@@ -67,7 +67,8 @@ public class User {
                 String lastName,
                 String neptunCode,
                 String email,
-                LocalDateTime created) {
+                LocalDateTime created,
+                List<Role> roles) {
 
         this.userId = userId;
         this.userName = userName;
@@ -77,7 +78,7 @@ public class User {
         this.neptunCode = neptunCode;
         this.email = email;
         this.created = created;
-
+        this.roles = roles;
     }
 
     public User() {

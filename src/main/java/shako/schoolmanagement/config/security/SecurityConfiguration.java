@@ -3,12 +3,15 @@ package shako.schoolmanagement.config.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import shako.schoolmanagement.config.auth.AppUserDetailsService;
@@ -16,6 +19,7 @@ import shako.schoolmanagement.config.auth.AppUserDetailsService;
 import javax.sql.DataSource;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfiguration {
 
     private final PasswordEncoder passwordEncoder;
@@ -53,26 +57,33 @@ public class SecurityConfiguration {
 
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeRequests( configurer ->
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        http.cors();
+        http.csrf().disable();
+        //http.addFilter(new AuthenticationFilter());
+        //http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+
+        http.authorizeRequests( configurer ->
                 {
                     try {
                         configurer
-                                .antMatchers("/", "index","/css","/js").permitAll()
-                                //.antMatchers("/api/**").hasRole("ADMIN")
+                                .antMatchers(HttpMethod.GET, "index","/css","/js").permitAll()
                                 .antMatchers("/api/student/addstudent").permitAll()
                                 .anyRequest()
                                 .authenticated()
-                                .and()
+                                /*.and()
                                 .formLogin()
                                     //.loginPage("/login").permitAll()
                                 .and()
                                 .rememberMe()
                                       .tokenRepository(persistentTokenRepository())
-                                      .tokenValiditySeconds(SecurityConstants.REMEMBER_ME_EXPIRATION_TIME)
+                                      .tokenValiditySeconds(SecurityConstants.EXPIRATION_TIME)
                                 .and()
                                 .logout()
-                                    .logoutUrl("/logout");
+                                    .clearAuthentication(true)
+                                    .invalidateHttpSession(true)
+                                    .deleteCookies("JSESSIONID","remember-me")*/;
                                 //.defaultSuccessUrl()
 
                     } catch (Exception e) {
@@ -80,10 +91,7 @@ public class SecurityConfiguration {
                     }
                 }
         );
-        httpSecurity.cors();
-        httpSecurity.csrf().disable();
-        //httpSecurity.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
-        return httpSecurity.build();
+        return http.build();
     }
 
     @Bean

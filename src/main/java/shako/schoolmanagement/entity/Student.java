@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "student")
@@ -24,10 +25,11 @@ public class Student extends User{
                    String neptunCode,
                    String email,
                    LocalDateTime created,
+                   List<Role> roles,
                    int rollNumber,
                    LocalDateTime graduationYear) {
 
-        super(userId, userName, password, firstName, lastName, neptunCode, email, created);
+        super(userId, userName, password, firstName, lastName, neptunCode, email, created, roles);
         this.rollNumber = rollNumber;
         this.graduationYear = graduationYear;
 
