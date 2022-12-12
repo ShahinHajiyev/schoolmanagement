@@ -11,7 +11,7 @@ public class SecurityConstants {
 
     @Autowired
     public SecurityConstants(JwtConfiguration jwtConfiguration) {
-        this.jwtConfiguration = jwtConfiguration;
+        SecurityConstants.jwtConfiguration = jwtConfiguration;
     }
 
     public static final int EXPIRATION_TIME = 86400000; // 1 day

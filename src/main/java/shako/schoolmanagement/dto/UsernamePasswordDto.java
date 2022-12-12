@@ -1,11 +1,11 @@
-package shako.schoolmanagement.config.security;
+package shako.schoolmanagement.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class UsernamePasswordAuthenticationRequest {
+public class UsernamePasswordDto {
 
     private String username;
     private String password;
