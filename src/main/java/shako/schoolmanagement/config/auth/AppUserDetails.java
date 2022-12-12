@@ -29,7 +29,7 @@ public class AppUserDetails implements UserDetails {
     List<String> permissions;
 
     public AppUserDetails(User user) {
-        
+
         this.roles = user.getRoles().stream().map(Role::getRoleName).collect(Collectors.toList());
 
         this.permissions = user.getRoles().stream()
@@ -38,7 +38,8 @@ public class AppUserDetails implements UserDetails {
                 .collect(Collectors.toList());
 
 
-        this.grantedAuthorities = permissions.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        //this.grantedAuthorities = permissions.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        this.grantedAuthorities = roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
         this.password = user.getPassword();
         this.username = user.getUserName();
         this.isAccountNonExpired = true;

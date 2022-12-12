@@ -18,6 +18,8 @@ public class SecurityConstants {
     public static final String SECURITY_HEADER = "Authorization";
     public static final String TOKEN_PREFIX = "Bearer ";
 
+    public static final String JWT_AUTHORITIES = "authorities";
+
     public static String getSecretToken(){
         return jwtConfiguration.getSecretToken();
     }

@@ -48,10 +48,13 @@ public class WebSecurityConfiguration {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilter(new AuthFilter(authenticationManagerBuilder.getOrBuild()))
+                .addFilterAfter(new TokenVerifier(), AuthFilter.class)
                 .authorizeRequests()
                 //http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
                                 .antMatchers(HttpMethod.GET, "index","/css","/js").permitAll()
                                 .antMatchers("/api/student/addstudent").permitAll()
+                                .antMatchers("/login").permitAll()
+                                .antMatchers("/api/course/**").hasRole("USER")
                                 .anyRequest().authenticated();
 
 

@@ -38,8 +38,6 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
                     usernamePasswordDto.getPassword()
             );
 
-
-
             return authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                           usernamePasswordDto.getUsername(),
@@ -57,10 +55,9 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
                                             FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
 
-
         String token = Jwts.builder()
                 .setSubject(authResult.getName())
-                .claim("authorities", authResult.getAuthorities())
+                .claim(SecurityConstants.JWT_AUTHORITIES, authResult.getAuthorities())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
                 .signWith(Keys.hmacShaKeyFor(SecurityConstants.getSecretToken().getBytes()))
