@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.authentication.configurers
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import shako.schoolmanagement.config.auth.AppUserDetailsService;
@@ -56,15 +55,8 @@ public class WebSecurityConfiguration {
                                 .antMatchers("/login").permitAll()
                                 .antMatchers("/api/course/**").hasRole("USER")
                                 .anyRequest().authenticated();
-
-
-
-
-        //http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
-
 
 
     /*        @Bean

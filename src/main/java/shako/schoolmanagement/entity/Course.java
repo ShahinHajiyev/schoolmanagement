@@ -1,5 +1,9 @@
 package shako.schoolmanagement.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,6 +11,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "course")
@@ -32,8 +37,9 @@ public class Course {
 
     @OneToOne
     @JoinColumn(name = "teacher_id")
-    private User teacher;
+    private Teacher teacher;
 
     @OneToMany(mappedBy = "course")
-    private List<Enrollment> enrollments;
+    @JsonIgnore
+    private Set<Enrollment> enrollments;
 }

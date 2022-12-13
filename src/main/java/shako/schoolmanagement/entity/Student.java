@@ -1,10 +1,14 @@
 package shako.schoolmanagement.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "student")
@@ -42,4 +46,9 @@ public class Student extends User{
     public Student() {
       super();
     }
+
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "student")
+    private Set<Enrollment> courseEnrollments;
 }

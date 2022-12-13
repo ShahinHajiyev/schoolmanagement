@@ -19,7 +19,7 @@ import java.util.Date;
 
 public class AuthFilter extends UsernamePasswordAuthenticationFilter {
 
-    private  AuthenticationManager authenticationManager;
+    private  final AuthenticationManager authenticationManager;
 
     public AuthFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
@@ -55,14 +55,18 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
                                             FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
 
-        String token = Jwts.builder()
-                .setSubject(authResult.getName())
-                .claim(SecurityConstants.JWT_AUTHORITIES, authResult.getAuthorities())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
-                .signWith(Keys.hmacShaKeyFor(SecurityConstants.getSecretToken().getBytes()))
-                .compact();
+        try{
+            String token = Jwts.builder()
+                    .setSubject(authResult.getName())
+                    .claim(SecurityConstants.JWT_AUTHORITIES, authResult.getAuthorities())
+                    .setIssuedAt(new Date())
+                    .setExpiration(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
+                    .signWith(Keys.hmacShaKeyFor(SecurityConstants.getSecretToken().getBytes()))
+                    .compact();
+            response.addHeader(SecurityConstants.SECURITY_HEADER, SecurityConstants.TOKEN_PREFIX + token);
+        }catch (Exception exception){
+            throw new RuntimeException(exception);
+        }
 
-        response.addHeader(SecurityConstants.SECURITY_HEADER, SecurityConstants.TOKEN_PREFIX + token);
     }
 }
