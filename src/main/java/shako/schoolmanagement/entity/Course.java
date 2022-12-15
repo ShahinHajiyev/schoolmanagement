@@ -1,17 +1,10 @@
 package shako.schoolmanagement.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import com.fasterxml.jackson.annotation.*;
+import lombok.*;
 import javax.persistence.*;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
 
 @Entity
 @Table(name = "course")
@@ -19,15 +12,19 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "courseId")
 public class Course {
 
     // ToDo : check the studentid, teacherid relationships with other tables if they work or not. Inheritance thing, there is not an id in those classes, only in tables.
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "courseId")
+    @Column(name = "course_id")
     private int courseId;
-
 
     @Column(name = "course_name")
     private String courseName;
@@ -39,7 +36,9 @@ public class Course {
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
 
+
     @OneToMany(mappedBy = "course")
-    @JsonIgnore
+    @EqualsAndHashCode.Exclude
     private Set<Enrollment> enrollments;
+
 }

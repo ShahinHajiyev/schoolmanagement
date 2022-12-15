@@ -1,9 +1,8 @@
 package shako.schoolmanagement.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -13,6 +12,7 @@ import java.util.Set;
 @Entity
 @Table(name = "student")
 @Data
+@EqualsAndHashCode
 public class Student extends User{
 
     @Column(name = "roll_no")
@@ -36,7 +36,6 @@ public class Student extends User{
         super(userId, userName, password, firstName, lastName, neptunCode, email, created, roles);
         this.rollNumber = rollNumber;
         this.graduationYear = graduationYear;
-
     }
 
     public Student(int userId) {
@@ -46,7 +45,6 @@ public class Student extends User{
     public Student() {
       super();
     }
-
 
     @JsonIgnore
     @OneToMany(mappedBy = "student")

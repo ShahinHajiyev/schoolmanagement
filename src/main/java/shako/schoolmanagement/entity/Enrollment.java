@@ -1,14 +1,7 @@
 package shako.schoolmanagement.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import com.fasterxml.jackson.annotation.*;
+import lombok.*;
 import javax.persistence.*;
 import java.util.Date;
 
@@ -19,7 +12,10 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-
+@EqualsAndHashCode
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "enrollmentId")
 public class Enrollment {
 
     @Id
@@ -29,10 +25,12 @@ public class Enrollment {
 
     @ManyToOne
     @JoinColumn(name = "student_id")
+    @EqualsAndHashCode.Exclude
     private Student student;
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "course_id")
+    @EqualsAndHashCode.Exclude
     private Course course;
 
     @Column(name = "registered_at")

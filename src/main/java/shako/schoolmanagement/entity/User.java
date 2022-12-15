@@ -1,5 +1,6 @@
 package shako.schoolmanagement.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
@@ -78,7 +79,8 @@ public class User {
         this.neptunCode = neptunCode;
         this.email = email;
         this.created = created;
-        this.roles = roles;
+        this.roles=roles;
+
     }
 
     public User() {
@@ -91,5 +93,6 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     @ToString.Exclude
+    //@JsonIgnore
     private List<Role> roles = new ArrayList<>();
 }

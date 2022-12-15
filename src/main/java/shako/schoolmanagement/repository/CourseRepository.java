@@ -10,7 +10,7 @@ import java.util.List;
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Integer> {
 
-    @Query(value = "select * from course inner join enrollment", nativeQuery = true)
+    @Query(value = "select * from course c right join enrollment e on c.course_id = e.course_id", nativeQuery = true)
     List<Course> findAll();
 
 }
