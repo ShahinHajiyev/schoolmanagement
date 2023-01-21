@@ -1,12 +1,15 @@
 package shako.schoolmanagement.service.inter;
 
-import org.springframework.data.jpa.repository.Query;
-import shako.schoolmanagement.entity.Enrollment;
 
+import shako.schoolmanagement.dto.EnrollmentDto;
 import java.util.List;
 
 public interface EnrollmentService {
 
 
-    List<Enrollment> getEnrollments();
+    List<EnrollmentDto> getAllEnrollments();
+
+    void addEnrollment(EnrollmentDto enrollmentDto);
+
+    void deleteEnrollment(Integer enrollmentId);
 }

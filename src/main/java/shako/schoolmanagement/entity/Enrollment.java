@@ -3,6 +3,7 @@ package shako.schoolmanagement.entity;
 import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 
@@ -17,7 +18,6 @@ import java.util.Date;
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "enrollmentId")
 public class Enrollment {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "enrollment_id")
@@ -34,7 +34,7 @@ public class Enrollment {
     private Course course;
 
     @Column(name = "registered_at")
-    private Date dateOfRegister;
+    private LocalDateTime dateOfRegister;
 
     @Column(name = "grade")
     private int grade;
