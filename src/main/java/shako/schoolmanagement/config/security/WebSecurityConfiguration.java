@@ -52,7 +52,7 @@ public class WebSecurityConfiguration {
                                 .antMatchers(HttpMethod.GET, "index","/css","/js").permitAll()
                                 .antMatchers("/api/student/addstudent").permitAll()
                                 .antMatchers("/login").permitAll()
-                                .antMatchers("/api/course/**").hasRole("USER")
+                                .antMatchers("/api/course/**").hasAnyRole("USER","ADMIN")
                                 .antMatchers("/api/enrollment/**").hasRole("ADMIN")
                                 .anyRequest().authenticated();
         return http.build();
