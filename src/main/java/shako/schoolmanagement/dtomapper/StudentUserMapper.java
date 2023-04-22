@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import shako.schoolmanagement.dto.StudentUserDto;
+import shako.schoolmanagement.dto.UsernamePasswordDto;
 import shako.schoolmanagement.entity.Student;
 
 

@@ -2,12 +2,13 @@ package shako.schoolmanagement.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import shako.schoolmanagement.dto.StudentUserDto;
+import shako.schoolmanagement.dto.UsernamePasswordDto;
+import shako.schoolmanagement.entity.Student;
 import shako.schoolmanagement.service.inter.StudentService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/student")
@@ -27,5 +28,12 @@ public class StudentController {
         studentService.addStudent(studentUserDto);
         return ResponseEntity.ok("Student added successfully");
     }
+
+    @GetMapping
+    public List<Student> getAll(){
+        return studentService.getAll();
+    }
+
+
 
 }

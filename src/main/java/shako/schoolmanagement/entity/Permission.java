@@ -1,10 +1,7 @@
 package shako.schoolmanagement.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.List;
@@ -14,18 +11,18 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Permission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "permission_id")
+    @EqualsAndHashCode.Include
     private int permissionId;
 
     @Column(name = "permission_name")
     private String permissionName;
 
     @ManyToMany(mappedBy = "permissions")
-    @JsonIgnore
-    @ToString.Exclude
     private List<Role> roles;
 }

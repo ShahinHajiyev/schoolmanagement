@@ -45,7 +45,7 @@ public class AppUserDetails implements UserDetails {
         this.isAccountNonExpired = true;
         this.isAccountNonLocked = true;
         this.isCredentialsNonExpired = true;
-        this.isEnabled = user.getIsActive();
+        this.isEnabled = true; //user.getIsActive();
 
     }
 

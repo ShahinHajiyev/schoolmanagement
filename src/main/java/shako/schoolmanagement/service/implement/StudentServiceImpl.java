@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import shako.schoolmanagement.dto.StudentUserDto;
+import shako.schoolmanagement.dto.UsernamePasswordDto;
 import shako.schoolmanagement.dtomapper.StudentUserMapper;
 import shako.schoolmanagement.entity.Role;
 import shako.schoolmanagement.entity.Student;
@@ -13,6 +14,7 @@ import shako.schoolmanagement.service.inter.StudentService;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -46,5 +48,11 @@ public class StudentServiceImpl implements StudentService {
         Role roles = roleRepository.findByRoleName("ROLE_USER");
         student.setRoles(Collections.singletonList(roles));
         studentRepository.save(student);
+    }
+
+    @Override
+    public List<Student> getAll() {
+        List<Student> students = studentRepository.findAll();
+        return students;
     }
 }

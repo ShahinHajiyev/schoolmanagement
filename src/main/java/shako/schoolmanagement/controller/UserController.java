@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import shako.schoolmanagement.dto.UserDto;
+import shako.schoolmanagement.dto.UsernamePasswordDto;
 import shako.schoolmanagement.service.inter.UserService;
 
 @RestController
@@ -26,6 +27,8 @@ public class UserController {
         userService.addUser(userDto);
         return ResponseEntity.ok("Student added successfully");
     }
+
+
 
 
 

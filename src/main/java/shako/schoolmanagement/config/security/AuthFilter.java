@@ -8,10 +8,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import shako.schoolmanagement.dto.StudentUserDto;
 import shako.schoolmanagement.dto.UsernamePasswordDto;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -29,6 +31,10 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
                                                 HttpServletResponse response) throws AuthenticationException {
+
+        System.err.println(request);
+
+
         try {
             UsernamePasswordDto usernamePasswordDto = new ObjectMapper().
                     readValue(request.getInputStream(), UsernamePasswordDto.class);
@@ -54,6 +60,9 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
                                             HttpServletResponse response,
                                             FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
+
+        System.err.println("Request................" + request.getRequestURI());
+
 
         try{
             String token = Jwts.builder()

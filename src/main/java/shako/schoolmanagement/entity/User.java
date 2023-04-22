@@ -3,6 +3,7 @@ package shako.schoolmanagement.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.persistence.*;
@@ -14,11 +15,61 @@ import java.util.*;
 @Table(name = "user")
 @Data
 @Inheritance(strategy = InheritanceType.JOINED)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User {
+
+/*    public User(int userId,
+                String userName,
+                String password,
+                String firstName,
+                String lastName,
+                String neptunCode,
+                String email,
+                LocalDateTime created,
+                List<Role> roles,
+                String country) {
+
+        this.userId = userId;
+        this.userName = userName;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.neptunCode = neptunCode;
+        this.email = email;
+        this.created = created;
+        this.roles=roles;
+        this.country = country;
+
+    }*/
+
+    public User(int userId,
+                String userName,
+                String password,
+                String firstName,
+                String lastName,
+                String neptunCode,
+                String email,
+                LocalDateTime created,
+                //List<Role> roles,
+                String country) {
+
+        this.userId = userId;
+        this.userName = userName;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.neptunCode = neptunCode;
+        this.email = email;
+        this.created = created;
+        //this.roles=roles;
+        this.country = country;
+
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
+    @EqualsAndHashCode.Include
     private int userId;
 
     @Column(name = "username")
@@ -61,40 +112,17 @@ public class User {
         this.userId = userId;
     }
 
-    public User(int userId,
-                String userName,
-                String password,
-                String firstName,
-                String lastName,
-                String neptunCode,
-                String email,
-                LocalDateTime created,
-                List<Role> roles,
-                String country) {
 
-        this.userId = userId;
-        this.userName = userName;
-        this.password = password;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.neptunCode = neptunCode;
-        this.email = email;
-        this.created = created;
-        this.roles=roles;
-        this.country = country;
-
-    }
 
     public User() {
     }
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name="user_role",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    @ToString.Exclude
     //@JsonIgnore
     private List<Role> roles = new ArrayList<>();
 }

@@ -11,10 +11,10 @@ import java.util.Set;
 @Entity
 @Table(name = "student")
 @Data
-@EqualsAndHashCode
-@JsonIdentityInfo(
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+/*@JsonIdentityInfo(
         generator =  ObjectIdGenerators.PropertyGenerator.class,
-        property = "userId")
+        property = "userId")*/
 public class Student extends User{
 
     public Student(int userId,
@@ -25,12 +25,12 @@ public class Student extends User{
                    String neptunCode,
                    String email,
                    LocalDateTime created,
-                   List<Role> roles,
+                   //List<Role> roles,
                    String country,
                    int rollNumber,
                    LocalDateTime graduationYear) {
 
-        super(userId, userName, password, firstName, lastName, neptunCode, email, created, roles, country);
+        super(userId, userName, password, firstName, lastName, neptunCode, email, created, /*roles,*/ country);
         this.rollNumber = rollNumber;
         this.graduationYear = graduationYear;
     }
@@ -49,7 +49,7 @@ public class Student extends User{
       super();
     }
 
-    @JsonIgnore
+
     @OneToMany(mappedBy = "student")
     private Set<Enrollment> courseEnrollments;
 

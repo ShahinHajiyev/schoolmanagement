@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import shako.schoolmanagement.config.auth.AppUserDetailsService;
 
+import javax.servlet.Filter;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -45,17 +47,24 @@ public class WebSecurityConfiguration {
         http.csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .addFilter(new AuthFilter(authenticationManagerBuilder.getOrBuild()))
+                //.addFilter(new AuthFilter(authenticationManagerBuilder.getOrBuild()))
+                .addFilter(getAuthFilter())
                 .addFilterAfter(new TokenVerifier(), AuthFilter.class)
                 .authorizeRequests()
                 //http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
                                 .antMatchers(HttpMethod.GET, "index","/css","/js").permitAll()
                                 .antMatchers("/api/student/addstudent").permitAll()
-                                .antMatchers("/login").permitAll()
                                 .antMatchers("/api/course/**").hasAnyRole("USER","ADMIN")
                                 .antMatchers("/api/enrollment/**").hasRole("ADMIN")
                                 .anyRequest().authenticated();
         return http.build();
+    }
+
+    private Filter getAuthFilter() {
+
+        AuthFilter authFilter = new AuthFilter(authenticationManagerBuilder.getOrBuild());
+        authFilter.setFilterProcessesUrl("/api/login");
+        return authFilter;
     }
 
 
