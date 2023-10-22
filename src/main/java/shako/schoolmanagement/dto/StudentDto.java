@@ -6,7 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import shako.schoolmanagement.dtomapper.StudentMapper;
+
 import shako.schoolmanagement.entity.Student;
 
 import java.time.LocalDateTime;
