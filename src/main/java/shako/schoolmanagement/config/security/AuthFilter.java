@@ -33,10 +33,13 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
             UsernamePasswordDto usernamePasswordDto = new ObjectMapper().
                     readValue(request.getInputStream(), UsernamePasswordDto.class);
 
+
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     usernamePasswordDto.getUsername(),
                     usernamePasswordDto.getPassword()
             );
+
+
 
             return authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
