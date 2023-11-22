@@ -20,5 +20,4 @@ public class CourseController {
     public List<Course> getCourses(){
         return courseService.getCourses();
     }
-
 }

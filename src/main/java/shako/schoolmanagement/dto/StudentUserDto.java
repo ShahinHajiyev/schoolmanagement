@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
@@ -18,13 +19,14 @@ public class StudentUserDto {
     private int userId;*/
 
     @NotNull
-    private String userName;
+    private String username;
 
     @NotNull
     private String password;
 
-    @NotNull
-    private String email;
+/*    @NotNull
+    @Email(message = "Please enter the correct email")
+    private String email;*/
 
     private LocalDateTime created;
 }
