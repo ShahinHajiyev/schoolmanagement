@@ -21,12 +21,7 @@ public class StudentController {
         this.studentService = studentService;
     }
 
-    @PostMapping("/addstudent")
-    public ResponseEntity addStudent(@RequestBody StudentUserDto studentUserDto){
 
-        studentService.addStudent(studentUserDto);
-        return ResponseEntity.ok("Student added successfully");
-    }
 
     @GetMapping
     public List<Student> getAll(){

@@ -24,9 +24,12 @@ public class StudentUserDto {
     @NotNull
     private String password;
 
-/*    @NotNull
+    @NotNull
+    private String neptunCode;
+
+    @NotNull
     @Email(message = "Please enter the correct email")
-    private String email;*/
+    private String email;
 
     private LocalDateTime created;
 }

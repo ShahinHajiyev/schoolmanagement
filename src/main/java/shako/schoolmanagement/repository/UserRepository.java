@@ -3,6 +3,7 @@ package shako.schoolmanagement.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import shako.schoolmanagement.entity.Student;
 import shako.schoolmanagement.entity.User;
 
 import java.util.Optional;
@@ -18,5 +19,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByUserName(String username);
 
 
-    Optional<String> findByEmail(String email);
+    @Query(value = "SELECT u FROM User u WHERE u.email = :email")
+    Student findStudentByEmail(String email);
+
+    Optional<User> findByEmail(String mail);
 }

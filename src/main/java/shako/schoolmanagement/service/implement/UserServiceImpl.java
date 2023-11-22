@@ -1,19 +1,23 @@
 package shako.schoolmanagement.service.implement;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.servlet.JspTemplateAvailabilityProvider;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import shako.schoolmanagement.dto.UserDto;
+import shako.schoolmanagement.dto.StudentUserDto;
+import shako.schoolmanagement.dtomapper.StudentUserMapper;
 import shako.schoolmanagement.dtomapper.UserMapper;
+import shako.schoolmanagement.entity.Role;
 import shako.schoolmanagement.entity.Student;
 import shako.schoolmanagement.entity.User;
+import shako.schoolmanagement.repository.RoleRepository;
 import shako.schoolmanagement.repository.StudentRepository;
 import shako.schoolmanagement.repository.UserRepository;
 import shako.schoolmanagement.service.inter.UserService;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.Collections;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -21,24 +25,47 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
-    private final UserMapper userMapper;
-
+    private final StudentUserMapper studentUserMapper;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final RoleRepository roleRepository;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, StudentRepository studentRepository, UserMapper userMapper, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, StudentRepository studentRepository, UserMapper userMapper, StudentUserMapper studentUserMapper, BCryptPasswordEncoder bCryptPasswordEncoder, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.studentRepository = studentRepository;
-        this.userMapper = userMapper;
+        this.studentUserMapper = studentUserMapper;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.roleRepository = roleRepository;
     }
 
 
     @Override
-    public void addUser(UserDto userDto) {
-    User user = userMapper.dtoToUserEntity(userDto);
-    user.setPassword(bCryptPasswordEncoder.encode(userDto.getPassword()));
-    user.setCreated(LocalDateTime.now());
-    userRepository.save(user);
+    public void register(StudentUserDto studentUserDto) {
+
+        Student studentFromDB = userRepository.findStudentByEmail(studentUserDto.getEmail());
+        //Optional<User> studentFromDB = userRepository.findByEmail(studentUserDto.getEmail());
+        Student student = studentUserMapper.dtoToStudentEntity(studentUserDto);
+
+        if (student.getEmail().equals(studentFromDB.getEmail()) &&
+                student.getNeptunCode().equals(studentFromDB.getNeptunCode()) &&
+                  studentFromDB.getIsActive() == null) {
+
+            student.setUserId(studentFromDB.getUserId());
+            student.setPassword(bCryptPasswordEncoder.encode(studentUserDto.getPassword()));
+            student.setCreated(LocalDateTime.now());
+            Role roles = roleRepository.findByRoleName("ROLE_USER");
+            student.setRoles(Collections.singletonList(roles));
+            studentRepository.save(student);
+        }
+
+        else {
+            System.out.println("Student already exists");
+        }
+
+    }
+
+    @Override
+    public Boolean isUserExistsByEmail(String email) {
+        return userRepository.findByEmail(email).isPresent();
     }
 }

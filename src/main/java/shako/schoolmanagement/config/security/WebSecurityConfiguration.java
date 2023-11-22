@@ -52,7 +52,7 @@ public class WebSecurityConfiguration {
                 .authorizeRequests()
                 //http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
                 .antMatchers(HttpMethod.GET, "index","/css","/js").permitAll()
-                .antMatchers("/api/student/addstudent").permitAll()
+                .antMatchers("/api/user/register").permitAll()
                 .antMatchers("/api/course/**").hasAnyRole("USER","ADMIN")
                 .antMatchers("/api/enrollment/**").hasRole("ADMIN")
                 .antMatchers("/api/admin/**").hasRole("ADMIN")

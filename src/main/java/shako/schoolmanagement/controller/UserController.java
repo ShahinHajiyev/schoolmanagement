@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import shako.schoolmanagement.dto.StudentUserDto;
 import shako.schoolmanagement.dto.UserDto;
 import shako.schoolmanagement.service.inter.StudentService;
 import shako.schoolmanagement.service.inter.TeacherService;
@@ -34,9 +35,9 @@ public class UserController {
         return ResponseEntity.ok("Student added successfully");
     }*/
 
-    @PostMapping("/adduser")
-    public ResponseEntity<?> addUser(@RequestBody UserDto userDto){
-        userService.addUser(userDto);
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody StudentUserDto studentUserDto){
+        userService.register(studentUserDto);
         return ResponseEntity.ok("Student added successfully");
     }
 }
