@@ -39,13 +39,12 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
                     usernamePasswordDto.getPassword()
             );
 
-
-
             return authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
+                    /*new UsernamePasswordAuthenticationToken(
                           usernamePasswordDto.getUsername(),
                           usernamePasswordDto.getPassword()
-            ));
+            )*/
+            authentication);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
