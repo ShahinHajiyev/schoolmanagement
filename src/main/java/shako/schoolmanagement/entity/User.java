@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
+import shako.schoolmanagement.validator.ValidEmail;
+import shako.schoolmanagement.validator.ValidNeptunCode;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -34,9 +36,11 @@ public class User {
     private String lastName;
 
     @Column(name = "neptun_code")
+    @ValidNeptunCode
     private String neptunCode;
 
     @Column(name = "email")
+    @ValidEmail
     private String email;
 
     @Column(name = "created")
@@ -56,6 +60,9 @@ public class User {
 
     @Column(name = "social_security_number")
     private int socialSecurityNumber;
+
+    @Column(name = "validation")
+    private String validation;
 
     public User(int userId) {
         this.userId = userId;

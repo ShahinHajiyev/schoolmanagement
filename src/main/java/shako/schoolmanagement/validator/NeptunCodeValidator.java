@@ -12,7 +12,7 @@ public class NeptunCodeValidator implements ConstraintValidator<ValidNeptunCode,
     @Override
     public boolean isValid(String neptunCode, ConstraintValidatorContext context) {
         if (neptunCode == null) {
-            return true;
+            return false;
         }
         return neptunCode.matches("[a-zA-Z0-9]{6}");
     }
