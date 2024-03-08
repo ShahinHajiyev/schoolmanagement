@@ -1,7 +1,6 @@
 package shako.schoolmanagement.service.implement;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.servlet.JspTemplateAvailabilityProvider;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import shako.schoolmanagement.dto.StudentUserDto;
@@ -9,7 +8,9 @@ import shako.schoolmanagement.dtomapper.StudentUserMapper;
 import shako.schoolmanagement.dtomapper.UserMapper;
 import shako.schoolmanagement.entity.Role;
 import shako.schoolmanagement.entity.Student;
-import shako.schoolmanagement.entity.User;
+import shako.schoolmanagement.exception.StudentAlreadyExistsException;
+import shako.schoolmanagement.exception.StudentNotActiveRequestException;
+import shako.schoolmanagement.exception.StudentNotExistsException;
 import shako.schoolmanagement.repository.RoleRepository;
 import shako.schoolmanagement.repository.StudentRepository;
 import shako.schoolmanagement.repository.UserRepository;
@@ -17,7 +18,6 @@ import shako.schoolmanagement.service.inter.UserService;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -43,12 +43,18 @@ public class UserServiceImpl implements UserService {
     public void register(StudentUserDto studentUserDto) {
 
         Student studentFromDB = userRepository.findStudentByEmail(studentUserDto.getEmail());
+
+        if (studentFromDB == null) {
+            throw new StudentNotExistsException("Student does not exist");
+        }
+
         //Optional<User> studentFromDB = userRepository.findByEmail(studentUserDto.getEmail());
         Student student = studentUserMapper.dtoToStudentEntity(studentUserDto);
+        student.setNeptunCode(studentFromDB.getNeptunCode().toUpperCase());
 
         if (student.getEmail().equals(studentFromDB.getEmail()) &&
                 student.getNeptunCode().equals(studentFromDB.getNeptunCode()) &&
-                  studentFromDB.getIsActive() == null) {
+                studentFromDB.getCreated() == null) {
 
             student.setUserId(studentFromDB.getUserId());
             student.setPassword(bCryptPasswordEncoder.encode(studentUserDto.getPassword()));
@@ -59,7 +65,7 @@ public class UserServiceImpl implements UserService {
         }
 
         else {
-            System.out.println("Student already exists");
+            throw new StudentAlreadyExistsException("Student exists");
         }
 
     }

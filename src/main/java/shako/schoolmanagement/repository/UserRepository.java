@@ -18,9 +18,25 @@ public interface UserRepository extends JpaRepository<User, Integer> {
             "where u.username = ?", nativeQuery = true)
     Optional<User> findByUserName(String username);
 
+    @Query(value = "select *, r.role_name, 0 AS clazz_ " +
+            "from user u join user_role ur " +
+            "on u.id = ur.user_id join role r " +
+            "on ur.role_id = r.role_id " +
+            "where u.neptun_code = ?", nativeQuery = true)
+    Optional<User> findByNeptunCode(String neptunCode);
+
+    @Query(value = "select *, r.role_name, 0 AS clazz_ " +
+            "from user u join user_role ur " +
+            "on u.id = ur.user_id join role r " +
+            "on ur.role_id = r.role_id " +
+            "where u.neptun_code = ?", nativeQuery = true)
+    User findByNeptun(String neptunCode);
+
 
     @Query(value = "SELECT u FROM User u WHERE u.email = :email")
     Student findStudentByEmail(String email);
 
     Optional<User> findByEmail(String mail);
+    @Query(value = "SELECT u.isActive FROM User u WHERE u.id = :userId")
+    boolean isUserActive(int userId);
 }

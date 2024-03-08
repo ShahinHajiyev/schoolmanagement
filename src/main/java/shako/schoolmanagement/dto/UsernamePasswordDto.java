@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UsernamePasswordDto {
 
-    private String username;
+    private String neptunCode;
     private String password;
 }

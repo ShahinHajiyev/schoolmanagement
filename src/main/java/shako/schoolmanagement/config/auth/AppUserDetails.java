@@ -3,6 +3,7 @@ package shako.schoolmanagement.config.auth;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 import shako.schoolmanagement.entity.Permission;
 import shako.schoolmanagement.entity.Role;
 import shako.schoolmanagement.entity.User;
@@ -41,7 +42,7 @@ public class AppUserDetails implements UserDetails {
         //this.grantedAuthorities = permissions.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
         this.grantedAuthorities = roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
         this.password = user.getPassword();
-        this.username = user.getUserName();
+        this.username = user.getNeptunCode();
         this.isAccountNonExpired = true;
         this.isAccountNonLocked = true;
         this.isCredentialsNonExpired = true;

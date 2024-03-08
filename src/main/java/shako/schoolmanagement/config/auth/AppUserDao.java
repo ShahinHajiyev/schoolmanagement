@@ -4,5 +4,5 @@ import java.util.Optional;
 
 public interface AppUserDao {
 
-     Optional<AppUserDetails> selectAppUserByUserName(String username);
+     Optional<AppUserDetails> selectAppUserByUserName(String neptunCode);
 }
