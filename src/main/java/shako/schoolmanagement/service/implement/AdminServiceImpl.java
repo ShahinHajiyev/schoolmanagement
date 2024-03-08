@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import shako.schoolmanagement.dto.AdminStudentDto;
 import shako.schoolmanagement.dtomapper.AdminStudentMapper;
 import shako.schoolmanagement.entity.Student;
+import shako.schoolmanagement.exception.EmailCannotBeEmptyException;
 import shako.schoolmanagement.repository.StudentRepository;
 import shako.schoolmanagement.service.inter.AdminService;
 import shako.schoolmanagement.service.inter.StudentService;
@@ -34,6 +35,12 @@ public class AdminServiceImpl implements AdminService {
     public void addStudentByAdmin(AdminStudentDto adminStudentDto) {
 
         Student student = adminStudentMapper.dtoToStudentEntity(adminStudentDto);
+        student.setNeptunCode(student.getNeptunCode().toUpperCase());
+
+        if (adminStudentDto.getEmail() == null) {
+            throw new EmailCannotBeEmptyException("Email is empty");
+        }
+
         if (userService.isUserExistsByEmail(adminStudentDto.getEmail())) {
             throw new IllegalArgumentException("The email already taken, Check carefully!");
         }

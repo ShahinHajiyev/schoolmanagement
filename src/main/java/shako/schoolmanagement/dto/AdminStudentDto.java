@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
 public class AdminStudentDto {
 
     @NotNull
-    @ValidNeptunCode
+    @ValidNeptunCode(message = "invalid neptun code")
     private String neptunCode;
 
     @NotNull
