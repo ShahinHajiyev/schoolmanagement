@@ -3,12 +3,17 @@ package shako.schoolmanagement.config.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import shako.schoolmanagement.dto.UsernamePasswordDto;
+import javax.servlet.http.HttpServletRequest;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -21,35 +26,40 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
 
     private  final AuthenticationManager authenticationManager;
 
-    public AuthFilter(AuthenticationManager authenticationManager) {
+
+    private final HandlerExceptionResolver exceptionResolver;
+
+    private static final Logger log = LoggerFactory.getLogger(WebSecurityConfiguration.class);
+
+
+    @Autowired
+    public AuthFilter(AuthenticationManager authenticationManager, HandlerExceptionResolver exceptionResolver) {
         this.authenticationManager = authenticationManager;
+        this.exceptionResolver = exceptionResolver;
     }
 
 
-    @Override
+   @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
                                                 HttpServletResponse response) throws AuthenticationException {
+
+       System.out.println("Here");
+
         try {
             UsernamePasswordDto usernamePasswordDto = new ObjectMapper().
                     readValue(request.getInputStream(), UsernamePasswordDto.class);
 
 
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    usernamePasswordDto.getUsername(),
-                    usernamePasswordDto.getPassword()
-            );
+            return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                    usernamePasswordDto.getNeptunCode(),
+                    usernamePasswordDto.getPassword()));
 
-            return authenticationManager.authenticate(
-                    /*new UsernamePasswordAuthenticationToken(
-                          usernamePasswordDto.getUsername(),
-                          usernamePasswordDto.getPassword()
-            )*/
-            authentication);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        }  catch (BadCredentialsException  | IOException ex ) {
+            exceptionResolver.resolveException(request,response,null,new shako.schoolmanagement.exception.BadCredentialsException("Bad credentials"));
+        throw new shako.schoolmanagement.exception.BadCredentialsException("Bad Credentials");
     }
+   }
+
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request,
@@ -57,7 +67,7 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
                                             FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
 
-        try{
+
             String token = Jwts.builder()
                     .setSubject(authResult.getName())
                     .claim(SecurityConstants.JWT_AUTHORITIES, authResult.getAuthorities())
@@ -66,9 +76,25 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
                     .signWith(Keys.hmacShaKeyFor(SecurityConstants.getSecretToken().getBytes()))
                     .compact();
             response.addHeader(SecurityConstants.SECURITY_HEADER, SecurityConstants.TOKEN_PREFIX + token);
-        }catch (Exception exception){
-            throw new RuntimeException(exception);
         }
 
+        public String passwordEncode(String password) {
+
+        return  new BCryptPasswordEncoder().encode(password);
+       }
+
     }
-}
+
+
+
+
+/*    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request,
+                                              HttpServletResponse response,
+                                              AuthenticationException failed) throws IOException, ServletException {
+        //super.unsuccessfulAuthentication(request, response, failed);
+
+        int statusCode = HttpServletResponse.SC_UNAUTHORIZED;
+        response.sendError(statusCode, "AAA");
+    }*/
+
