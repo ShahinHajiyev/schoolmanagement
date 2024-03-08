@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import shako.schoolmanagement.validator.ValidEmail;
 import shako.schoolmanagement.validator.ValidNeptunCode;
 
 import javax.validation.constraints.NotNull;
@@ -19,5 +20,6 @@ public class AdminStudentDto {
     private String neptunCode;
 
     @NotNull
+    @ValidEmail
     private String email;
 }
