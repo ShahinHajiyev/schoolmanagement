@@ -24,6 +24,8 @@ import shako.schoolmanagement.dto.UsernamePasswordDto;
 import shako.schoolmanagement.entity.User;
 import shako.schoolmanagement.exception.StudentNotActiveRequestException;
 import shako.schoolmanagement.repository.UserRepository;
+import shako.schoolmanagement.service.inter.MailService;
+import shako.schoolmanagement.validator.LoginValidator;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ReadListener;
@@ -44,11 +46,22 @@ public class AccountStatusCheckerFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
     private final HandlerExceptionResolver handlerExceptionResolver;
 
+
+    public final MailService mailService;
+
+
+    public final LoginValidator loginValidator;
+
     @Autowired
-    public AccountStatusCheckerFilter(UserRepository userRepository, HandlerExceptionResolver handlerExceptionResolver) {
+    public AccountStatusCheckerFilter(UserRepository userRepository,
+                                      HandlerExceptionResolver handlerExceptionResolver,
+                                      MailService mailService,
+                                      LoginValidator loginValidator) {
 
         this.userRepository = userRepository;
         this.handlerExceptionResolver = handlerExceptionResolver;
+        this.mailService = mailService;
+        this.loginValidator = loginValidator;
     }
 
 
@@ -56,13 +69,6 @@ public class AccountStatusCheckerFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
-
-
-
-        //HttpServletRequestWrapper requestClone = new ContentCachingRequestWrapper(request);
-
-        //ClonedHttpServletRequest requestClone = new ClonedHttpServletRequest(request);
 
         CachedBodyHttpServletRequest requestClone =
                 new CachedBodyHttpServletRequest(request);
@@ -74,12 +80,14 @@ public class AccountStatusCheckerFilter extends OncePerRequestFilter {
 
 
         if (user.isPresent() && !user.get().getIsActive()) {
+            String token = loginValidator.validationTokenGenerator();
+            mailService.sendMail(user.get().getEmail(),
+                    "This is the activation code: ",
+                    token);
             handlerExceptionResolver.resolveException(requestClone, response, null, new StudentNotActiveRequestException("Student not active"));
             throw new StudentNotActiveRequestException("StudentNotActiveException");
 
         }
-
-
 
             filterChain.doFilter(requestClone, response);
         }
@@ -88,16 +96,8 @@ public class AccountStatusCheckerFilter extends OncePerRequestFilter {
     private String extractUsername(HttpServletRequestWrapper request) throws IOException {
 
 
-
-
-
        if (request.getMethod().equals(HttpMethod.POST.toString())) {
             try {
-
-            /*    UsernamePasswordDto objectMapper = new ObjectMapper().readValue(request.getInputStream(), UsernamePasswordDto.class);
-
-
-                return objectMapper.getNeptunCode();*/
 
 
                 ObjectMapper objectMapper = new ObjectMapper();
@@ -105,17 +105,6 @@ public class AccountStatusCheckerFilter extends OncePerRequestFilter {
 
                 return jsonNode.get("neptunCode").asText();
 
- /*               StringBuilder jsonBody = new StringBuilder();
-                try (BufferedReader reader = request.getReader()) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        jsonBody.append(line);
-                    }
-                }
-
-                JsonObject jsonObject = Json.createReader(new StringReader(jsonBody.toString())).readObject();
-                String neptunCode = jsonObject.getString("neptunCode");
-                return neptunCode;*/
 
             } catch (Exception e) {
 
@@ -128,59 +117,3 @@ public class AccountStatusCheckerFilter extends OncePerRequestFilter {
 }
 
 
-
-  class CachedBodyHttpServletRequest  extends HttpServletRequestWrapper {
-      private byte[] cachedBody;
-
-      public CachedBodyHttpServletRequest(HttpServletRequest request) throws IOException {
-          super(request);
-          InputStream requestInputStream = request.getInputStream();
-          this.cachedBody = StreamUtils.copyToByteArray(requestInputStream);
-      }
-
-      @Override
-      public ServletInputStream getInputStream() throws IOException {
-          return new CachedBodyServletInputStream(this.cachedBody);
-      }
-
-      @Override
-      public BufferedReader getReader() throws IOException {
-          ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(this.cachedBody);
-          return new BufferedReader(new InputStreamReader(byteArrayInputStream));
-      }
-
-    }
-
-
-class CachedBodyServletInputStream extends ServletInputStream {
-
-    private InputStream cachedBodyInputStream;
-
-    public CachedBodyServletInputStream(byte[] cachedBody) {
-        this.cachedBodyInputStream = new ByteArrayInputStream(cachedBody);
-    }
-
-    @Override
-    public boolean isFinished() {
-        try {
-            return cachedBodyInputStream.available() == 0;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public boolean isReady() {
-        return true;
-    }
-
-    @Override
-    public void setReadListener(ReadListener readListener) {
-
-    }
-
-    @Override
-    public int read() throws IOException {
-        return cachedBodyInputStream.read();
-    }
-}

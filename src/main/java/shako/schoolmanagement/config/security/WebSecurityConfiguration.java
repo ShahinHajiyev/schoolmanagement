@@ -21,6 +21,8 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import shako.schoolmanagement.config.auth.AppUserDetails;
 import shako.schoolmanagement.config.auth.AppUserDetailsService;
 import shako.schoolmanagement.repository.UserRepository;
+import shako.schoolmanagement.service.inter.MailService;
+import shako.schoolmanagement.validator.LoginValidator;
 
 import javax.servlet.Filter;
 
@@ -53,10 +55,19 @@ public class WebSecurityConfiguration {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private MailService mailService;
+
+    @Autowired
+    private LoginValidator loginValidator;
+
 
     @Autowired
     public AccountStatusCheckerFilter statusCheckerFilter(){
-        return new AccountStatusCheckerFilter(userRepository, handlerExceptionResolver);
+        return new AccountStatusCheckerFilter(userRepository,
+                                              handlerExceptionResolver,
+                                              mailService,
+                                              loginValidator);
     }
 
 

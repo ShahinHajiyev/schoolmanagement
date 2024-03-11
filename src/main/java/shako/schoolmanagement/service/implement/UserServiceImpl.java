@@ -61,6 +61,7 @@ public class UserServiceImpl implements UserService {
             student.setCreated(LocalDateTime.now());
             Role roles = roleRepository.findByRoleName("ROLE_USER");
             student.setRoles(Collections.singletonList(roles));
+            student.setIsActive(false);
             studentRepository.save(student);
         }
 
