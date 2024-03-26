@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import shako.schoolmanagement.entity.User;
 import shako.schoolmanagement.repository.UserRepository;
 import shako.schoolmanagement.service.inter.MailService;
-import shako.schoolmanagement.validator.LoginValidator;
+import shako.schoolmanagement.validator.LoginActivator;
 
 import java.util.Optional;
 
@@ -17,15 +17,15 @@ import java.util.Optional;
 public class AppUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final LoginValidator loginValidator;
+    private final LoginActivator loginActivator;
     private  final MailService mailService;
 
 
 
     @Autowired
-    public AppUserDetailsService(UserRepository userRepository, LoginValidator loginValidator, MailService mailService) {
+    public AppUserDetailsService(UserRepository userRepository, LoginActivator loginActivator, MailService mailService) {
         this.userRepository = userRepository;
-        this.loginValidator = loginValidator;
+        this.loginActivator = loginActivator;
         this.mailService = mailService;
     }
 

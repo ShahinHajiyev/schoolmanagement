@@ -13,7 +13,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -32,14 +31,17 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {StudentNotActiveRequestException.class })
     public ResponseEntity<?> handleStudentNotActiveException(StudentNotActiveRequestException ex) {
+
         ExceptionMessage exceptionMessage = new ExceptionMessage(new Date(), ex.getMessage());
 
-        String errorMessage = "StudentNotActiveException : " + ex.getMessage();
+        RestError restError = new RestError(StatusCode.CONFLICT, ex.getMessage());
+
+        String errorMessage = ex.getMessage();
         System.out.println(errorMessage);
 
 
         System.out.println(ex + " Not active");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorMessage);
     }
 
     @ExceptionHandler(value = {ExpiredJwtException.class })
