@@ -18,7 +18,6 @@ import java.util.Set;
 public class Student extends User{
 
     public Student(int userId,
-                   String userName,
                    String password,
                    String firstName,
                    String lastName,
@@ -30,7 +29,7 @@ public class Student extends User{
                    int rollNumber,
                    LocalDateTime graduationYear) {
 
-        super(userId, userName, password, firstName, lastName, neptunCode, email, created, roles, country);
+        super(userId, password, firstName, lastName, neptunCode, email, created, roles, country);
         this.rollNumber = rollNumber;
         this.graduationYear = graduationYear;
     }
