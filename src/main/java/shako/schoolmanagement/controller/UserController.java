@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import shako.schoolmanagement.dto.ActivationCodeDto;
 import shako.schoolmanagement.dto.StudentUserDto;
 import shako.schoolmanagement.dto.UserDto;
 import shako.schoolmanagement.exception.StudentAlreadyExistsException;
@@ -16,6 +17,8 @@ import shako.schoolmanagement.exception.StudentNotExistsException;
 import shako.schoolmanagement.service.inter.StudentService;
 import shako.schoolmanagement.service.inter.TeacherService;
 import shako.schoolmanagement.service.inter.UserService;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/api/user")
@@ -59,8 +62,9 @@ public class UserController {
 
     }
 
-    @PostMapping("/validate")
-    public ResponseEntity<?> validate(@RequestBody String validationCode) {
+    @PostMapping("/activate")
+    public ResponseEntity<?> validate(@RequestBody @Valid ActivationCodeDto activationCode) {
+        this.userService.activateUser(activationCode);
         try {
             return ResponseEntity.ok("placeholder");
         } catch (Exception e) {
@@ -69,13 +73,5 @@ public class UserController {
     }
 
 
-
-
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody String neptunCode, String password) {
-
-            return ResponseEntity.ok("placeholder");
-
-    }
     
 }

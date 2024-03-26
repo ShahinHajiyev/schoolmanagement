@@ -3,13 +3,14 @@ package shako.schoolmanagement.service.implement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import shako.schoolmanagement.dto.ActivationCodeDto;
 import shako.schoolmanagement.dto.StudentUserDto;
 import shako.schoolmanagement.dtomapper.StudentUserMapper;
 import shako.schoolmanagement.dtomapper.UserMapper;
 import shako.schoolmanagement.entity.Role;
 import shako.schoolmanagement.entity.Student;
+import shako.schoolmanagement.entity.User;
 import shako.schoolmanagement.exception.StudentAlreadyExistsException;
-import shako.schoolmanagement.exception.StudentNotActiveRequestException;
 import shako.schoolmanagement.exception.StudentNotExistsException;
 import shako.schoolmanagement.repository.RoleRepository;
 import shako.schoolmanagement.repository.StudentRepository;
@@ -18,6 +19,7 @@ import shako.schoolmanagement.service.inter.UserService;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -71,8 +73,42 @@ public class UserServiceImpl implements UserService {
 
     }
 
+
+
     @Override
     public Boolean isUserExistsByEmail(String email) {
         return userRepository.findByEmail(email).isPresent();
     }
+
+    @Override
+    public void activateUser(ActivationCodeDto activationCode) {
+
+        //Optional<User> user = this.userRepository.findByNeptunCode(activationCode.getNeptunCode());
+        try {
+            User user = this.userRepository.findByNeptun(activationCode.getNeptunCode());
+            if (!user.getActivationCode().equals(activationCode.getActivationCode())) {
+                throw new RuntimeException("Activation failed"); //to do
+            }
+
+            user.setIsActive(true);
+            userRepository.save(user);
+
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void saveActivationCode(User currentUser, String activationCode) {
+
+            User user = userRepository.findByNeptun(currentUser.getNeptunCode());
+            user.setActivationCode(activationCode);
+            System.out.println(user);
+            userRepository.saveActivationCode(user.getNeptunCode(), activationCode);
+
+
+
+    }
+
+
 }

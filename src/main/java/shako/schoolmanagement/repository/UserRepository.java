@@ -1,8 +1,10 @@
 package shako.schoolmanagement.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import shako.schoolmanagement.entity.Student;
 import shako.schoolmanagement.entity.User;
 
@@ -37,6 +39,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Student findStudentByEmail(String email);
 
     Optional<User> findByEmail(String mail);
-    @Query(value = "SELECT u.isActive FROM User u WHERE u.id = :userId")
-    boolean isUserActive(int userId);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE USER u SET u.activation_code = :activationCode where u.neptun_code = :neptunCode", nativeQuery = true)
+    void saveActivationCode(String neptunCode, String activationCode);
+
+
 }

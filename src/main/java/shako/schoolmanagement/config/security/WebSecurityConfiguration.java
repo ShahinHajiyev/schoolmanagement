@@ -5,24 +5,20 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.HandlerExceptionResolver;
-import shako.schoolmanagement.config.auth.AppUserDetails;
 import shako.schoolmanagement.config.auth.AppUserDetailsService;
 import shako.schoolmanagement.repository.UserRepository;
 import shako.schoolmanagement.service.inter.MailService;
-import shako.schoolmanagement.validator.LoginValidator;
+import shako.schoolmanagement.service.inter.UserService;
+import shako.schoolmanagement.validator.LoginActivator;
 
 import javax.servlet.Filter;
 
@@ -59,7 +55,10 @@ public class WebSecurityConfiguration {
     private MailService mailService;
 
     @Autowired
-    private LoginValidator loginValidator;
+    private LoginActivator loginActivator;
+
+    @Autowired
+    private UserService userService;
 
 
     @Autowired
@@ -67,7 +66,9 @@ public class WebSecurityConfiguration {
         return new AccountStatusCheckerFilter(userRepository,
                                               handlerExceptionResolver,
                                               mailService,
-                                              loginValidator);
+                loginActivator,
+                                             passwordEncoder,
+                userService);
     }
 
 
@@ -88,7 +89,8 @@ public class WebSecurityConfiguration {
                 .antMatchers(HttpMethod.GET, "index", "/css", "/js","/error").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/login").permitAll()
                 .antMatchers("/api/user/register").permitAll()
-                .antMatchers("/api/course/**").hasAnyRole("USER", "ADMIN")
+                        .antMatchers("/api/user/activate").permitAll()
+                .antMatchers("/api/course/**").permitAll()
                 .antMatchers("/api/enrollment/**").hasRole("ADMIN")
                 .antMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
@@ -114,7 +116,8 @@ public class WebSecurityConfiguration {
 
     private Filter getAuthFilter() {
 
-        AuthFilter authFilter = new AuthFilter( authenticationManagerBuilder.getOrBuild(), handlerExceptionResolver);
+        AuthFilter authFilter = new AuthFilter( authenticationManagerBuilder.getOrBuild(),
+                                                handlerExceptionResolver);
         authFilter.setFilterProcessesUrl("/api/login");
 
         return authFilter;
