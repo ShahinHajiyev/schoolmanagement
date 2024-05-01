@@ -14,16 +14,16 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-@JsonIdentityInfo(
+/*@JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "enrollmentId")
+        property = "enrollmentId")*/
 public class Enrollment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "enrollment_id")
     private int enrollmentId;
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "student_id")
     @EqualsAndHashCode.Exclude
     private Student student;

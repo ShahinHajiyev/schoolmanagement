@@ -12,9 +12,9 @@ import java.util.Set;
 @Table(name = "student")
 @Data
 @EqualsAndHashCode
-@JsonIdentityInfo(
+/*@JsonIdentityInfo(
         generator =  ObjectIdGenerators.PropertyGenerator.class,
-        property = "userId")
+        property = "userId")*/
 public class Student extends User{
 
     public Student(int userId,
@@ -54,4 +54,8 @@ public class Student extends User{
 
     @OneToOne(mappedBy = "student")
     private Training training;
+
+    @OneToOne
+    @JoinColumn(name = "semester_id")
+    private Semester semester;
 }

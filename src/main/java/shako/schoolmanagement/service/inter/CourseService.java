@@ -1,11 +1,14 @@
 package shako.schoolmanagement.service.inter;
 
-import shako.schoolmanagement.entity.Course;
+import shako.schoolmanagement.dto.CourseDto;
 
 import java.util.List;
 
 public interface CourseService {
 
-    List<Course> getCourses();
+    List<CourseDto> getCourses();
+
+    List<CourseDto> getAvailableCourses();
+
 
 }
