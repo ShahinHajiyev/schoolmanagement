@@ -13,6 +13,9 @@ public interface StudentRepository extends JpaRepository<Student, Integer> {
      @Query(value = "select *, u.country from student s join user u on s.id = u.id  where s.id=?", nativeQuery = true)
      Optional<Student> findByUserId(Integer id);
 
+     @Query(value = "select *, u.country from student s join user u on s.id = u.id  where u.neptun_code = :neptunCode", nativeQuery = true)
+     Optional<Student> findByNeptunCode(String neptunCode);
+
 
 
 

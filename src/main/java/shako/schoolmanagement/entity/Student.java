@@ -3,6 +3,8 @@ package shako.schoolmanagement.entity;
 import com.fasterxml.jackson.annotation.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,10 +14,11 @@ import java.util.Set;
 @Table(name = "student")
 @Data
 @EqualsAndHashCode
-/*@JsonIdentityInfo(
+@JsonIdentityInfo(
         generator =  ObjectIdGenerators.PropertyGenerator.class,
-        property = "userId")*/
+        property = "userId")
 public class Student extends User{
+
 
     public Student(int userId,
                    String password,
@@ -49,13 +52,17 @@ public class Student extends User{
     }
 
     @JsonIgnore
-    @OneToMany(mappedBy = "student")
+    @OneToMany(mappedBy = "student",fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<Enrollment> courseEnrollments;
 
     @OneToOne(mappedBy = "student")
+    @ToString.Exclude
     private Training training;
 
     @OneToOne
+    @ToString.Exclude
     @JoinColumn(name = "semester_id")
     private Semester semester;
 }

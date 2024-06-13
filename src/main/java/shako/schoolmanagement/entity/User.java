@@ -1,9 +1,13 @@
 package shako.schoolmanagement.entity;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import shako.schoolmanagement.validator.ValidEmail;
 import shako.schoolmanagement.validator.ValidNeptunCode;
 
@@ -13,18 +17,20 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
+@DynamicInsert
+@DynamicUpdate
 @Table(name = "user")
 @Data
 @Inheritance(strategy = InheritanceType.JOINED)
+@JsonIdentityInfo(
+        generator =  ObjectIdGenerators.PropertyGenerator.class,
+        property = "userId")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int userId;
-
-    @Column(name = "username")
-    private String userName;
 
     @Column(name = "password")
     private String password;
@@ -61,15 +67,14 @@ public class User {
     @Column(name = "social_security_number")
     private int socialSecurityNumber;
 
-    @Column(name = "validation")
-    private String validation;
+    @Column(name = "activation_code")
+    private String activationCode;
 
     public User(int userId) {
         this.userId = userId;
     }
 
     public User(int userId,
-                String userName,
                 String password,
                 String firstName,
                 String lastName,
@@ -80,7 +85,6 @@ public class User {
                 String country) {
 
         this.userId = userId;
-        this.userName = userName;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -92,16 +96,26 @@ public class User {
 
     }
 
+    public User(int userId,
+                String neptunCode,
+                String email){
+        this.userId = userId;
+        this.neptunCode = neptunCode;
+        this.email = email;
+    }
+
+
     public User() {
     }
 
     @ManyToMany(fetch = FetchType.EAGER)
+    @ToString.Exclude
     @JoinTable(
             name="user_role",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    @ToString.Exclude
+    //@ToString.Exclude
     //@JsonIgnore
     private List<Role> roles = new ArrayList<>();
 }

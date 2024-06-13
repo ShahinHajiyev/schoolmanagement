@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.apache.commons.lang3.builder.HashCodeExclude;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.util.List;
@@ -15,9 +17,9 @@ import java.util.Set;
 @Entity
 @Data
 @EqualsAndHashCode
-/*@JsonIdentityInfo(
+@JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "id")*/
+        property = "id")
 public class Semester {
 
     @Column(name = "id")
@@ -28,12 +30,15 @@ public class Semester {
     @Column(name = "name")
     private String name;
 
-    @OneToMany(mappedBy = "semester")
+    @OneToMany(mappedBy = "semester",fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private List<Course> courses;
 
-    @OneToMany(mappedBy = "semester")
+    @OneToMany(mappedBy = "semester",fetch = FetchType.EAGER)
+    @Fetch(FetchMode.JOIN)
     @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private List<Student> students;
 
 }

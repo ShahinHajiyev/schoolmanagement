@@ -66,7 +66,7 @@ public class UserController {
     public ResponseEntity<?> validate(@RequestBody @Valid ActivationCodeDto activationCode) {
         this.userService.activateUser(activationCode);
         try {
-            return ResponseEntity.ok("placeholder");
+            return ResponseEntity.ok("Activation successful");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

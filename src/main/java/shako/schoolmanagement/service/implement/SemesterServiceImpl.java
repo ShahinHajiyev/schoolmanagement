@@ -15,6 +15,9 @@ public class SemesterServiceImpl implements SemesterService {
     private final SemesterRepository semesterRepository;
     @Override
     public List<Semester> getAllSemesters() {
+        List<Semester> b = semesterRepository.getAllSemesters();
+        int a = 1;
+        System.out.println("asd");
         return semesterRepository.getAllSemesters();
     }
 }

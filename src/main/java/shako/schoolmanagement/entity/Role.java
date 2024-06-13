@@ -27,10 +27,10 @@ public class Role {
     @Column(name = "role_name")
     private String roleName;
 
-    @ManyToMany(mappedBy = "roles")
+/*    @ManyToMany(mappedBy = "roles")
     @JsonIgnore
     @ToString.Exclude
-    private List<User> users;
+    private List<User> users;*/
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "role_permission",
@@ -39,10 +39,5 @@ public class Role {
     @ToString.Exclude
     private List<Permission> permissions = new ArrayList<>();
 
-/*    public List<SimpleGrantedAuthority> getGrantedAuthorities(){
-        List<SimpleGrantedAuthority> permissions = getPermissions().stream()
-                .map(permission -> new SimpleGrantedAuthority(permission.getPermissionName()))
-                .collect(Collectors.toList());
-        return permissions;
-    }*/
+
 }

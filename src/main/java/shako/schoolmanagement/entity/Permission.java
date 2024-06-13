@@ -24,8 +24,8 @@ public class Permission {
     @Column(name = "permission_name")
     private String permissionName;
 
-    @ManyToMany(mappedBy = "permissions")
+/*    @ManyToMany(mappedBy = "permissions")
     @JsonIgnore
     @ToString.Exclude
-    private List<Role> roles;
+    private List<Role> roles;*/
 }
