@@ -22,4 +22,7 @@ public class AdminStudentDto {
     @NotNull
     @ValidEmail
     private String email;
+
+    @NotNull
+    private String selectedUser;
 }

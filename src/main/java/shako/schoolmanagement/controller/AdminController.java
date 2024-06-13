@@ -23,9 +23,9 @@ public class AdminController {
     private AdminService adminService;
 
     @PostMapping("/addStudentByAdmin")
-    public ResponseEntity addStudent(@Valid @RequestBody AdminStudentDto adminStudentDto){
+    public ResponseEntity<?> addStudent(@Valid @RequestBody AdminStudentDto adminStudentDto){
         try {
-            adminService.addStudentByAdmin(adminStudentDto);
+            adminService.addUserByAdmin(adminStudentDto);
             return ResponseEntity.ok("Student added successfully");
         } catch (EmailCannotBeEmptyException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
