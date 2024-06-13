@@ -2,40 +2,26 @@ package shako.schoolmanagement.config.security;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StreamUtils;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
-import org.springframework.web.util.ContentCachingRequestWrapper;
-import shako.schoolmanagement.config.auth.AppUserDetails;
-import shako.schoolmanagement.config.auth.AppUserDetailsService;
-import shako.schoolmanagement.dto.UsernamePasswordDto;
 import shako.schoolmanagement.entity.User;
 import shako.schoolmanagement.exception.StudentNotActiveRequestException;
 import shako.schoolmanagement.repository.UserRepository;
 import shako.schoolmanagement.service.inter.MailService;
-import shako.schoolmanagement.validator.LoginValidator;
+import shako.schoolmanagement.service.inter.UserService;
+import shako.schoolmanagement.validator.LoginActivator;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ReadListener;
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.security.Principal;
+import java.io.IOException;
 import java.util.Optional;
 
 
@@ -50,18 +36,26 @@ public class AccountStatusCheckerFilter extends OncePerRequestFilter {
     public final MailService mailService;
 
 
-    public final LoginValidator loginValidator;
+    public final LoginActivator loginActivator;
+
+    public final PasswordEncoder passwordEncoder;
+
+    public final UserService userService;
+
+
 
     @Autowired
     public AccountStatusCheckerFilter(UserRepository userRepository,
                                       HandlerExceptionResolver handlerExceptionResolver,
                                       MailService mailService,
-                                      LoginValidator loginValidator) {
+                                      LoginActivator loginActivator, PasswordEncoder passwordEncoder, UserService userService) {
 
         this.userRepository = userRepository;
         this.handlerExceptionResolver = handlerExceptionResolver;
         this.mailService = mailService;
-        this.loginValidator = loginValidator;
+        this.loginActivator = loginActivator;
+        this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
     }
 
 
@@ -73,27 +67,41 @@ public class AccountStatusCheckerFilter extends OncePerRequestFilter {
         CachedBodyHttpServletRequest requestClone =
                 new CachedBodyHttpServletRequest(request);
 
+        String requestUrl = "http://localhost:8090/api/login";
 
-       String username = extractUsername(requestClone);
-        Optional <User> user = userRepository.findByNeptunCode(username);
+        if (request.getRequestURL().toString().equals(requestUrl)) {
+            Pair<String, String> credentials = extractUsername(requestClone);
+
+            assert credentials != null;
+            String username = credentials.getKey();
+            String password = credentials.getValue();
+
+            //User user = userRepository.findByNeptun(username);
+            Optional<User> user = userRepository.findByNeptunCode(username);
+            user.orElseThrow(() -> new UsernameNotFoundException("User does not exist"));
 
 
+            boolean isPasswordMatches = passwordEncoder.matches(password, user.get().getPassword());
 
-        if (user.isPresent() && !user.get().getIsActive()) {
-            String token = loginValidator.validationTokenGenerator();
-            mailService.sendMail(user.get().getEmail(),
-                    "This is the activation code: ",
-                    token);
-            handlerExceptionResolver.resolveException(requestClone, response, null, new StudentNotActiveRequestException("Student not active"));
-            throw new StudentNotActiveRequestException("StudentNotActiveException");
 
+            if (!user.get().getIsActive() && isPasswordMatches) {
+                handlerExceptionResolver.resolveException(requestClone, response, null, new StudentNotActiveRequestException("Student not active"));
+                String token = loginActivator.activationTokenGenerator();
+                userService.saveActivationCode(user.get(), token);
+
+                mailService.sendMail(user.get().getEmail(),
+                        "This is the activation code: ",
+                        token);
+                throw new StudentNotActiveRequestException("StudentNotActiveException");
+            }
         }
 
             filterChain.doFilter(requestClone, response);
         }
 
 
-    private String extractUsername(HttpServletRequestWrapper request) throws IOException {
+    private Pair extractUsername(HttpServletRequestWrapper request) throws IOException {
+
 
 
        if (request.getMethod().equals(HttpMethod.POST.toString())) {
@@ -103,7 +111,11 @@ public class AccountStatusCheckerFilter extends OncePerRequestFilter {
                 ObjectMapper objectMapper = new ObjectMapper();
                 JsonNode jsonNode = objectMapper.readTree(request.getReader());
 
-                return jsonNode.get("neptunCode").asText();
+                String neptunCode = jsonNode.get("neptunCode").asText();
+                String password = jsonNode.get("password").asText();
+
+                //return jsonNode.get("neptunCode").asText();
+                return Pair.of(neptunCode, password);
 
 
             } catch (Exception e) {

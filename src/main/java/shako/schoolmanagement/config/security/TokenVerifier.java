@@ -61,6 +61,8 @@ public class TokenVerifier extends OncePerRequestFilter {
 
         try{
 
+            System.err.println(SecurityContextHolder.getContext().getAuthentication());
+
             jws = Jwts.parserBuilder()
                     .setSigningKey(Keys.hmacShaKeyFor(SecurityConstants.getSecretToken().getBytes()))
                     .build()

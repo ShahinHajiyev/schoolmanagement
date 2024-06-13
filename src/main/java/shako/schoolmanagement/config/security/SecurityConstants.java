@@ -14,7 +14,7 @@ public class SecurityConstants {
         SecurityConstants.jwtConfiguration = jwtConfiguration;
     }
 
-    public static final int EXPIRATION_TIME = 900000;
+    public static final int EXPIRATION_TIME = 9000000;
     public static final String SECURITY_HEADER = "Authorization";
     public static final String TOKEN_PREFIX = "Bearer ";
 

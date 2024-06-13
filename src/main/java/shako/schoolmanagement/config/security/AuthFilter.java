@@ -43,7 +43,7 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
     public Authentication attemptAuthentication(HttpServletRequest request,
                                                 HttpServletResponse response) throws AuthenticationException {
 
-       System.out.println("Here");
+
 
         try {
             UsernamePasswordDto usernamePasswordDto = new ObjectMapper().
@@ -78,20 +78,6 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
             response.addHeader(SecurityConstants.SECURITY_HEADER, SecurityConstants.TOKEN_PREFIX + token);
         }
 
-
-
     }
 
-
-
-
-/*    @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request,
-                                              HttpServletResponse response,
-                                              AuthenticationException failed) throws IOException, ServletException {
-        //super.unsuccessfulAuthentication(request, response, failed);
-
-        int statusCode = HttpServletResponse.SC_UNAUTHORIZED;
-        response.sendError(statusCode, "AAA");
-    }*/
 

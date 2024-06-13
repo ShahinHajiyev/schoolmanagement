@@ -90,7 +90,6 @@ public class WebSecurityConfiguration {
                 .antMatchers(HttpMethod.POST, "/api/login").permitAll()
                 .antMatchers("/api/user/register").permitAll()
                         .antMatchers("/api/user/activate").permitAll()
-                .antMatchers("/api/course/**").permitAll()
                 .antMatchers("/api/enrollment/**").hasRole("ADMIN")
                 .antMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
@@ -106,12 +105,6 @@ public class WebSecurityConfiguration {
                         .authenticationProvider(daoAuthenticationProvider())
 
         .build();
-
-
-
-
-
-
     }
 
     private Filter getAuthFilter() {

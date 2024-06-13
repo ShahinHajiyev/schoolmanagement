@@ -8,7 +8,7 @@ import java.io.InputStream;
 
 class CachedBodyServletInputStream extends ServletInputStream {
 
-    private InputStream cachedBodyInputStream;
+    private final InputStream cachedBodyInputStream;
 
     public CachedBodyServletInputStream(byte[] cachedBody) {
         this.cachedBodyInputStream = new ByteArrayInputStream(cachedBody);

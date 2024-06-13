@@ -20,7 +20,7 @@ public class ConfigurationBeans {
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder(10);
-    };
+    }
 
     @Bean
     public ModelMapper modelMapper(){
@@ -42,6 +42,9 @@ public class ConfigurationBeans {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
+
+
+
 
 
 
