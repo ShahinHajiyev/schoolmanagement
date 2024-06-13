@@ -19,4 +19,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
     List<Enrollment> getAllEnrollments();
 
     Enrollment findByEnrollmentId(Integer enrollmentId);
+
+    @Query(value = "Select * from enrollment e where e.course_id = :courseId and student_id = :studentId", nativeQuery = true)
+    List<Enrollment> enrollmentsOfStudent(Integer courseId, Integer studentId);
 }
