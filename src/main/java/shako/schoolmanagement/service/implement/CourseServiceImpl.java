@@ -69,6 +69,14 @@ public class CourseServiceImpl implements CourseService {
         return courseDtos;
     }
 
+    @Override
+    public CourseDto getCourseByCourseId(int courseId) {
+        //Course courseFromDB = courseRepository.getCourseByCourseId(courseId);
+        Course courseFromDB = courseRepository.getCourseByCourseId(courseId);
+        CourseDto courseDto = courseMapper.courseToCourseDto(courseFromDB);
+        return courseDto;
+    }
+
 
 }
 

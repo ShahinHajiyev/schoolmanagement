@@ -4,9 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import shako.schoolmanagement.entity.Course;
-import shako.schoolmanagement.entity.Semester;
 
 @EqualsAndHashCode
 @Data
@@ -22,6 +19,8 @@ public class CourseDto {
     private int credit;
 
     private SemesterForGeneralCoursesDto semester;
+
+    public TeacherDto teacher;
 
 
 }

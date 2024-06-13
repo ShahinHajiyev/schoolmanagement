@@ -13,9 +13,9 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
-/*@JsonIdentityInfo(
+@JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "courseId")*/
+        property = "courseId")
 public class Course {
 
     // ToDo : check the studentid, teacherid relationships with other tables if they work or not. Inheritance thing, there is not an id in those classes, only in tables.
@@ -36,14 +36,15 @@ public class Course {
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "semester_id")
+    @ToString.Exclude
     private Semester semester;
 
 
-    @OneToMany(mappedBy = "course")
+    @OneToMany(mappedBy = "course",fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude
-    @JsonIgnore
+    @ToString.Exclude
     private Set<Enrollment> enrollments;
 
 }

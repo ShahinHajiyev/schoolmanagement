@@ -20,7 +20,7 @@ public class MailServiceImpl implements MailService {
     @Override
     public void sendMail(String toMail, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(senderEmailAddress);       //implement the mail value from app.properties and then from env. variables. Do not let it stay here
+        message.setFrom(senderEmailAddress);
         message.setTo(toMail);
         message.setText(body);
         message.setSubject(subject);

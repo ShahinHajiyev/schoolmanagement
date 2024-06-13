@@ -17,4 +17,7 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
             "s.id = st.semester_id join user u on st.id = u.id and u.neptun_code = :username)", nativeQuery = true )
     List<Course> getAvailableCourses(String username);
 
+    @Query(value = "select * from course where course_id = :courseId", nativeQuery = true )
+    Course getCourseByCourseId(int courseId);
+
 }
