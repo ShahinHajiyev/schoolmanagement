@@ -29,9 +29,7 @@ public class WebSecurityConfiguration {
 
 
 
-    @Autowired
-    @Qualifier("delegatedAuthenticationEntryPoint")
-    AuthenticationEntryPoint authEntryPoint;
+
 
     @Autowired
     @Qualifier("handlerExceptionResolver")
@@ -61,22 +59,6 @@ public class WebSecurityConfiguration {
     private UserService userService;
 
 
-    @Autowired
-    public AccountStatusCheckerFilter statusCheckerFilter(){
-        return new AccountStatusCheckerFilter(userRepository,
-                                              handlerExceptionResolver,
-                                              mailService,
-                loginActivator,
-                                             passwordEncoder,
-                userService);
-    }
-
-
-    @Autowired
-    void configure(AuthenticationManagerBuilder builder) throws Exception {
-        builder.userDetailsService(appUserDetailsService).passwordEncoder(passwordEncoder);
-    }
-
 
 
     @Bean
@@ -90,7 +72,6 @@ public class WebSecurityConfiguration {
                 .antMatchers(HttpMethod.POST, "/api/login").permitAll()
                 .antMatchers("/api/user/register").permitAll()
                         .antMatchers("/api/user/activate").permitAll()
-                .antMatchers("/api/enrollment/**").hasRole("ADMIN")
                 .antMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 )
@@ -98,11 +79,10 @@ public class WebSecurityConfiguration {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilterBefore(new TokenVerifier(handlerExceptionResolver), AuthFilter.class)
-                .addFilterBefore(statusCheckerFilter(), AuthFilter.class)
-                .addFilter(getAuthFilter()).exceptionHandling().authenticationEntryPoint(this.authEntryPoint).and()  //this auth can also be deleted
+                .addFilter(getAuthFilter())
 
 
-                        .authenticationProvider(daoAuthenticationProvider())
+                        .authenticationProvider(customDaoAuthenticationProvider())
 
         .build();
     }
@@ -117,13 +97,18 @@ public class WebSecurityConfiguration {
     }
 
     @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider() {
+    public CustomDaoAuthenticationProvider customDaoAuthenticationProvider() {
+        CustomDaoAuthenticationProvider provider = new CustomDaoAuthenticationProvider(loginActivator,
+                                                                                       mailService,
+                                                                                       userService,
+                                                                                       userRepository);
 
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(appUserDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
+
+
 
 
 }

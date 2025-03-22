@@ -3,17 +3,13 @@ package shako.schoolmanagement.config.auth;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
 import shako.schoolmanagement.entity.Permission;
 import shako.schoolmanagement.entity.Role;
 import shako.schoolmanagement.entity.User;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class AppUserDetails implements UserDetails {
 
@@ -39,7 +35,6 @@ public class AppUserDetails implements UserDetails {
                 .collect(Collectors.toList());
 
 
-        //this.grantedAuthorities = permissions.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
         this.grantedAuthorities = roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
         this.password = user.getPassword();
         this.username = user.getNeptunCode();

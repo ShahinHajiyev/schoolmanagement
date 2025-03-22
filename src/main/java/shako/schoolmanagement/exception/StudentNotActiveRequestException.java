@@ -5,7 +5,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(value = HttpStatus.CONFLICT, reason = "User not active")
-public class StudentNotActiveRequestException extends AuthenticationServiceException {
+public class StudentNotActiveRequestException extends RuntimeException {
 
     public StudentNotActiveRequestException(String message){
         super(message);

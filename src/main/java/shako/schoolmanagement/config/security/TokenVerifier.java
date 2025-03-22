@@ -50,16 +50,17 @@ public class TokenVerifier extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String authorizationHeader = request.getHeader(SecurityConstants.SECURITY_HEADER);
+        try{
 
         if(Strings.isNullOrEmpty(authorizationHeader) || !authorizationHeader.startsWith(SecurityConstants.TOKEN_PREFIX)){
             filterChain.doFilter(request,response);
-            return;
+            throw new JwtException("");
         }
 
         Jws<Claims> jws;
         String token = authorizationHeader.replace(SecurityConstants.TOKEN_PREFIX, "");
 
-        try{
+
 
             System.err.println(SecurityContextHolder.getContext().getAuthentication());
 
@@ -96,7 +97,6 @@ public class TokenVerifier extends OncePerRequestFilter {
             handlerExceptionResolver.resolveException(request, response, null, exception);
             throw new JwtException("Token is not trusted ");
         }
-        
 
         filterChain.doFilter(request,response);
 

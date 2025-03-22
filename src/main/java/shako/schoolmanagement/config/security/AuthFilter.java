@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -21,6 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AuthFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -45,21 +46,38 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
 
 
 
-        try {
-            UsernamePasswordDto usernamePasswordDto = new ObjectMapper().
-                    readValue(request.getInputStream(), UsernamePasswordDto.class);
-
-
-            return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                    usernamePasswordDto.getNeptunCode(),
-                    usernamePasswordDto.getPassword()));
-
-        }  catch (BadCredentialsException  | IOException ex ) {
-            exceptionResolver.resolveException(request,response,null,new shako.schoolmanagement.exception.BadCredentialsException("Bad credentials"));
-        throw new shako.schoolmanagement.exception.BadCredentialsException("Bad Credentials");
-    }
+       try {
+           UsernamePasswordDto   usernamePasswordDto = new ObjectMapper().
+                   readValue(request.getInputStream(), UsernamePasswordDto.class);
+           return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                   usernamePasswordDto.getNeptunCode(),
+                   usernamePasswordDto.getPassword()));
+       } catch (IOException e) {
+           throw new RuntimeException(e);
+       }
    }
 
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request,
+                                              HttpServletResponse response,
+                                              AuthenticationException failed) throws IOException, ServletException {
+
+        response.setContentType("application/json;charset=UTF-8");
+
+        if (failed.getMessage().equals("User is disabled")) {
+            response.setStatus(HttpServletResponse.SC_CONFLICT);
+
+        }
+
+        else response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+        Map<String, String> errorResponse = new HashMap<>();
+
+        errorResponse.put("error", "Authentication failed");
+        errorResponse.put("message", failed.getMessage());
+
+        new ObjectMapper().writeValue(response.getWriter(), errorResponse);
+    }
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request,
