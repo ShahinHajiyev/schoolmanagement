@@ -43,8 +43,11 @@ public class Course {
 
 
     @OneToMany(mappedBy = "course",fetch = FetchType.LAZY)
-    @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Set<Enrollment> enrollments;
+
+    @OneToOne(mappedBy = "course")
+    private CourseDetails courseDetails;
+
 
 }

@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import shako.schoolmanagement.entity.Student;
 
 import java.util.Date;
 
@@ -23,4 +22,8 @@ public class EnrollmentDto {
     private Date dateOfRegister;
 
     private int grade;
+
+    private boolean isRegistered;
+
+    private boolean isFinished;
 }

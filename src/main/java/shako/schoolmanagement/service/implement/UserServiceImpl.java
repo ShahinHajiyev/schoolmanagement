@@ -19,7 +19,6 @@ import shako.schoolmanagement.service.inter.UserService;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -101,10 +100,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void saveActivationCode(User currentUser, String activationCode) {
 
-            User user = userRepository.findByNeptun(currentUser.getNeptunCode());
-            user.setActivationCode(activationCode);
-            System.out.println(user);
-            userRepository.saveActivationCode(user.getNeptunCode(), activationCode);
+            //User user = userRepository.findByNeptun(currentUser.getNeptunCode());
+            currentUser.setActivationCode(activationCode);
+            System.out.println(currentUser);
+            userRepository.saveActivationCode(currentUser.getNeptunCode(), activationCode);
 
 
 

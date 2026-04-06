@@ -3,13 +3,12 @@ package shako.schoolmanagement.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 import shako.schoolmanagement.dto.AddEnrollmentDto;
 import shako.schoolmanagement.dto.EnrollmentDto;
-import shako.schoolmanagement.entity.Enrollment;
 import shako.schoolmanagement.exception.EnrollmentOutOfLimitException;
 import shako.schoolmanagement.exception.EnrollmentOutOfTimeException;
+import shako.schoolmanagement.exception.JsonResponse;
 import shako.schoolmanagement.service.inter.EnrollmentService;
 
 import java.util.ArrayList;
@@ -39,21 +38,19 @@ public class EnrollmentController {
         return enrollmentService.getAllEnrollments();
     }
 
-//    @PostMapping("/addenrollment")
-//    public ResponseEntity addEnrollment(@RequestBody EnrollmentDto enrollmentDto){
-//        enrollmentService.addEnrollment(enrollmentDto);
-//        return ResponseEntity.ok("Student enrolled to the course successfully! ");
-//    }
-
-    //To Do  make dto and service same as frontend
 
     @PostMapping("/addenrollment")
-    public ResponseEntity<?> addEnrollment(@RequestBody AddEnrollmentDto enrollmentDto){
+    public ResponseEntity<JsonResponse> addEnrollment(@RequestBody AddEnrollmentDto enrollmentDto){
         try {
             enrollmentService.addEnrollment(enrollmentDto);
-            return ResponseEntity.ok("Student enrolled to the course successfully! ");
-        }catch (EnrollmentOutOfLimitException | EnrollmentOutOfTimeException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            String responseBody = "Response with custom header!";
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .header("Content-Type", "application/json")
+                    .body(new JsonResponse(responseBody));
+       }
+        catch (EnrollmentOutOfLimitException | EnrollmentOutOfTimeException e) {
+            return null;//ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 

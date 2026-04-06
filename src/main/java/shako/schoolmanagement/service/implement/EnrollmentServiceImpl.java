@@ -10,7 +10,6 @@ import shako.schoolmanagement.dtomapper.StudentMapper;
 import shako.schoolmanagement.entity.Course;
 import shako.schoolmanagement.entity.Enrollment;
 import shako.schoolmanagement.entity.Student;
-import shako.schoolmanagement.entity.User;
 import shako.schoolmanagement.exception.EnrollmentOutOfLimitException;
 import shako.schoolmanagement.exception.EnrollmentOutOfTimeException;
 import shako.schoolmanagement.repository.CourseRepository;
@@ -69,29 +68,20 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         enrollmentOfStudent.setCourse(course);
         enrollmentOfStudent.setDateOfRegister(LocalDateTime.now());
 
+        int studentId = loggedInStudent.get().getUserId();
+        List<Enrollment> enrollmentList = enrollmentRepository.getEnrollmentsOfStudentByCourseId(enrollmentDto.getCourseId(), studentId);
 
-        List<Enrollment> enrollmentList = enrollmentRepository.enrollmentsOfStudent(enrollmentDto.getCourseId(), loggedInStudent.get().getUserId());
-
-        if (enrollmentList.isEmpty()) {
-            enrollmentRepository.save(enrollmentOfStudent);
-            //ToDo next request to remove the course from the available courses
-        }
-
-        else {
+        if (!enrollmentList.isEmpty()) {
             for (Enrollment a : enrollmentList) {
-                if (enrollmentList.size() < 3 && a.getDateOfRegister().plusMonths(3).isBefore(LocalDate.now().atStartOfDay())) {
-                    enrollmentRepository.save(enrollmentOfStudent);
-                    System.out.println("SOMETHING");
-                    System.err.println(a.getDateOfRegister());
-                    break;
-                } else if (enrollmentList.size() >= 3) {
+                 if (enrollmentList.size() >= 3) {
                     throw  new EnrollmentOutOfLimitException("Student has reached the limit of enrollment");
                 } else if (!a.getDateOfRegister().plusMonths(3).isBefore(LocalDate.now().atStartOfDay())) {
                     throw  new EnrollmentOutOfTimeException("Student has enrolled the course during the last 3 months");
                 }
             }
         }
-
+        enrollmentOfStudent.setRegistered(true);
+        enrollmentRepository.save(enrollmentOfStudent);
     }
 
     @Override

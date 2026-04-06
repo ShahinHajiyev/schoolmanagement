@@ -50,13 +50,13 @@ public class TokenVerifier extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
 
         String authorizationHeader = request.getHeader(SecurityConstants.SECURITY_HEADER);
-        try{
+
 
         if(Strings.isNullOrEmpty(authorizationHeader) || !authorizationHeader.startsWith(SecurityConstants.TOKEN_PREFIX)){
             filterChain.doFilter(request,response);
-            throw new JwtException("");
+            return;
         }
-
+        try{
         Jws<Claims> jws;
         String token = authorizationHeader.replace(SecurityConstants.TOKEN_PREFIX, "");
 

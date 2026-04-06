@@ -1,10 +1,11 @@
 package shako.schoolmanagement.entity;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 
 @Entity
@@ -38,4 +39,10 @@ public class Enrollment {
 
     @Column(name = "grade")
     private int grade;
+
+    @Column(name = "is_registered")
+    private boolean isRegistered;
+
+    @Column(name = "is_finished")
+    private boolean isFinished;
 }

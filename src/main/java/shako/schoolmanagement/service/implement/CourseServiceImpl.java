@@ -2,21 +2,23 @@ package shako.schoolmanagement.service.implement;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import shako.schoolmanagement.dto.CourseDto;
 import shako.schoolmanagement.dtomapper.CourseMapper;
 import shako.schoolmanagement.dtomapper.SemesterForGeneralCoursesMapper;
 import shako.schoolmanagement.dtomapper.StudentMapper;
 import shako.schoolmanagement.entity.Course;
+import shako.schoolmanagement.entity.Student;
 import shako.schoolmanagement.repository.CourseRepository;
+import shako.schoolmanagement.repository.EnrollmentRepository;
+import shako.schoolmanagement.repository.StudentRepository;
 import shako.schoolmanagement.service.inter.CourseService;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -30,23 +32,16 @@ public class CourseServiceImpl implements CourseService {
     private CourseMapper courseMapper;
     @Autowired
     private SemesterForGeneralCoursesMapper semesterForGeneralCoursesMapper;
+    @Autowired
+    private StudentRepository studentRepository;
+    @Autowired
+    private EnrollmentRepository enrollmentRepository;
 
-
-    private Authentication authentication;
 
     @Override
     public List<CourseDto> getCourses() {
+
         List<Course> courses = courseRepository.findAll();
-
-/*        List<Student> students = courses.stream()
-                .map(Course::getEnrollments)
-                .flatMap(enrollmentList->enrollmentList.stream()
-                        .map(Enrollment::getStudent)).toList();
-
-        List<StudentDto> studentDto = students.stream()
-                .map(studentMapper::studentToStudentDtoForTraining).toList();
-
-        return courses;*/
 
         List<CourseDto> courseDtos= courses.stream().map(courseMapper::courseToCourseDto).toList();
 
@@ -61,17 +56,21 @@ public class CourseServiceImpl implements CourseService {
     public List<CourseDto> getAvailableCourses() {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        List<Course> availableCourses = courseRepository.getAvailableCourses(username);
-        List<CourseDto> courseDtos= availableCourses.stream().map(courseMapper::courseToCourseDto).toList();
+        String neptunCode = authentication.getName();
+        Optional<Student> loggedInStudent = studentRepository.findByNeptunCode(neptunCode);
+        int studentId = loggedInStudent.get().getUserId();
 
+        List<Course> availableCoursesOfStudent = courseRepository.getAvailableCourses(neptunCode);
+        System.out.println(availableCoursesOfStudent);
+        List<Integer> activeEnrollmentsOfStudent = enrollmentRepository.getActiveEnrollmentsOfStudent(studentId);
+        List<Course> availableCoursesOfStudentAfterEnrollment =  availableCoursesOfStudent.stream().filter(a -> !activeEnrollmentsOfStudent.contains(a.getCourseId())).toList();
+        List<CourseDto> availableCoursesOfStudentAfterEnrollmentDtoList = availableCoursesOfStudentAfterEnrollment.stream().map(a -> courseMapper.courseToCourseDto(a)).toList();
 
-        return courseDtos;
+        return availableCoursesOfStudentAfterEnrollmentDtoList;
     }
 
     @Override
     public CourseDto getCourseByCourseId(int courseId) {
-        //Course courseFromDB = courseRepository.getCourseByCourseId(courseId);
         Course courseFromDB = courseRepository.getCourseByCourseId(courseId);
         CourseDto courseDto = courseMapper.courseToCourseDto(courseFromDB);
         return courseDto;
