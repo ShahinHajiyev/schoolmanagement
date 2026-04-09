@@ -3,7 +3,7 @@ package shako.schoolmanagement.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(HttpStatus.CHECKPOINT)
+@ResponseStatus(HttpStatus.BAD_REQUEST)
 public class EmailCannotBeEmptyException extends RuntimeException{
     private String message;
 

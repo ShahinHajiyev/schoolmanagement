@@ -83,18 +83,13 @@ public class UserServiceImpl implements UserService {
     public void activateUser(ActivationCodeDto activationCode) {
 
         //Optional<User> user = this.userRepository.findByNeptunCode(activationCode.getNeptunCode());
-        try {
-            User user = this.userRepository.findByNeptun(activationCode.getNeptunCode());
-            if (!user.getActivationCode().equals(activationCode.getActivationCode())) {
-                throw new RuntimeException("Activation failed"); //to do
-            }
-
-            user.setIsActive(true);
-            userRepository.save(user);
-
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+        User user = this.userRepository.findByNeptun(activationCode.getNeptunCode());
+        if (!user.getActivationCode().equals(activationCode.getActivationCode())) {
+            throw new RuntimeException("Activation failed");
         }
+
+        user.setIsActive(true);
+        userRepository.save(user);
     }
 
     @Override
@@ -102,7 +97,6 @@ public class UserServiceImpl implements UserService {
 
             //User user = userRepository.findByNeptun(currentUser.getNeptunCode());
             currentUser.setActivationCode(activationCode);
-            System.out.println(currentUser);
             userRepository.saveActivationCode(currentUser.getNeptunCode(), activationCode);
 
 

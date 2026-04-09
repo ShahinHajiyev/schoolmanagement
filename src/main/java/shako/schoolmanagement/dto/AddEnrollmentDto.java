@@ -6,7 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
 @Data
 @NoArgsConstructor
@@ -14,6 +15,8 @@ import java.util.Date;
 @EqualsAndHashCode
 public class AddEnrollmentDto {
 
-    private int courseId;
+    @NotNull
+    @Positive
+    private Integer courseId;
     private String neptunCode;
 }

@@ -14,6 +14,7 @@ import shako.schoolmanagement.entity.Student;
 import shako.schoolmanagement.repository.CourseRepository;
 import shako.schoolmanagement.repository.EnrollmentRepository;
 import shako.schoolmanagement.repository.StudentRepository;
+import shako.schoolmanagement.exception.StudentNotExistsException;
 import shako.schoolmanagement.service.inter.CourseService;
 
 import java.util.List;
@@ -58,10 +59,9 @@ public class CourseServiceImpl implements CourseService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String neptunCode = authentication.getName();
         Optional<Student> loggedInStudent = studentRepository.findByNeptunCode(neptunCode);
-        int studentId = loggedInStudent.get().getUserId();
+        int studentId = loggedInStudent.orElseThrow(() -> new StudentNotExistsException("Logged-in student not found")).getUserId();
 
         List<Course> availableCoursesOfStudent = courseRepository.getAvailableCourses(neptunCode);
-        System.out.println(availableCoursesOfStudent);
         List<Integer> activeEnrollmentsOfStudent = enrollmentRepository.getActiveEnrollmentsOfStudent(studentId);
         List<Course> availableCoursesOfStudentAfterEnrollment =  availableCoursesOfStudent.stream().filter(a -> !activeEnrollmentsOfStudent.contains(a.getCourseId())).toList();
         List<CourseDto> availableCoursesOfStudentAfterEnrollmentDtoList = availableCoursesOfStudentAfterEnrollment.stream().map(a -> courseMapper.courseToCourseDto(a)).toList();

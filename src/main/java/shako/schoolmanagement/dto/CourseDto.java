@@ -20,7 +20,7 @@ public class CourseDto {
 
     private SemesterForGeneralCoursesDto semester;
 
-    public TeacherDto teacher;
+    private TeacherDto teacher;
 
 
 }

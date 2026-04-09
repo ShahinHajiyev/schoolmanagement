@@ -15,6 +15,7 @@ import shako.schoolmanagement.exception.EnrollmentOutOfTimeException;
 import shako.schoolmanagement.repository.CourseRepository;
 import shako.schoolmanagement.repository.EnrollmentRepository;
 import shako.schoolmanagement.repository.StudentRepository;
+import shako.schoolmanagement.exception.StudentNotExistsException;
 import shako.schoolmanagement.service.inter.EnrollmentService;
 
 import java.time.LocalDate;
@@ -61,22 +62,23 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Override
     public void addEnrollment(AddEnrollmentDto enrollmentDto) {
         Optional<Student> loggedInStudent = studentRepository.findByNeptunCode(enrollmentDto.getNeptunCode());
-        System.out.println(enrollmentDto);
+        Student student = loggedInStudent.orElseThrow(() -> new StudentNotExistsException("Logged-in student not found"));
         Enrollment enrollmentOfStudent = new Enrollment();
-        enrollmentOfStudent.setStudent(loggedInStudent.get());
+        enrollmentOfStudent.setStudent(student);
         Course course = courseRepository.getCourseByCourseId(enrollmentDto.getCourseId());
         enrollmentOfStudent.setCourse(course);
         enrollmentOfStudent.setDateOfRegister(LocalDateTime.now());
 
-        int studentId = loggedInStudent.get().getUserId();
+        int studentId = student.getUserId();
         List<Enrollment> enrollmentList = enrollmentRepository.getEnrollmentsOfStudentByCourseId(enrollmentDto.getCourseId(), studentId);
 
         if (!enrollmentList.isEmpty()) {
+            if (enrollmentList.size() >= 3) {
+                throw new EnrollmentOutOfLimitException("Student has reached the limit of enrollment");
+            }
             for (Enrollment a : enrollmentList) {
-                 if (enrollmentList.size() >= 3) {
-                    throw  new EnrollmentOutOfLimitException("Student has reached the limit of enrollment");
-                } else if (!a.getDateOfRegister().plusMonths(3).isBefore(LocalDate.now().atStartOfDay())) {
-                    throw  new EnrollmentOutOfTimeException("Student has enrolled the course during the last 3 months");
+                if (!a.getDateOfRegister().plusMonths(3).isBefore(LocalDate.now().atStartOfDay())) {
+                    throw new EnrollmentOutOfTimeException("Student has enrolled the course during the last 3 months");
                 }
             }
         }

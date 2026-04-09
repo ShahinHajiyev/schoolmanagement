@@ -18,7 +18,9 @@ public class StudentUserMapper {
     }
 
     public Student dtoToStudentEntity(StudentUserDto studentUserDto){
-
+        // Note: StudentUserDto.username has no matching field in the Student/User entity.
+        // ModelMapper will silently ignore it. Fields like neptunCode and password are
+        // overridden explicitly in UserServiceImpl after this mapping.
         return modelMapper.map(studentUserDto, Student.class);
     }
 

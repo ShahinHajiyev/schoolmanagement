@@ -65,7 +65,7 @@ public class User {
     private String country;
 
     @Column(name = "social_security_number")
-    private int socialSecurityNumber;
+    private String socialSecurityNumber;
 
     @Column(name = "activation_code")
     private String activationCode;

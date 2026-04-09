@@ -10,10 +10,6 @@ import java.util.List;
 @Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer> {
 
-    @Query(value = "Select * from enrollment e where e.student_id=10", nativeQuery = true)
-    @Override
-    List<Enrollment> findAll();
-
     @Query(value = "Select * from enrollment", nativeQuery = true)
     List<Enrollment> getAllEnrollments();
 

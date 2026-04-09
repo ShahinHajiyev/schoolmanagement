@@ -50,7 +50,7 @@ public class EnrollmentController {
                     .body(new JsonResponse(responseBody));
        }
         catch (EnrollmentOutOfLimitException | EnrollmentOutOfTimeException e) {
-            return null;//ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new JsonResponse(e.getMessage()));
         }
     }
 
