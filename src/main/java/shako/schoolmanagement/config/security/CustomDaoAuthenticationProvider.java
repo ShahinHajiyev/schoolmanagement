@@ -1,28 +1,35 @@
 package shako.schoolmanagement.config.security;
 
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.BadCredentialsException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import shako.schoolmanagement.entity.User;
 import shako.schoolmanagement.repository.UserRepository;
 import shako.schoolmanagement.service.inter.MailService;
 import shako.schoolmanagement.service.inter.UserService;
 import shako.schoolmanagement.validator.LoginActivator;
 
+/**
+ * Extends DaoAuthenticationProvider to add activation-email logic on first login
+ * while a user's account is still disabled.
+ *
+ * Strategy: delegate the full authentication pipeline to super.authenticate()
+ * (password check, pre/post checks, account-expired, locked, credentials-expired).
+ * Intercept only DisabledException to inject the email side-effect, then rethrow.
+ * This avoids re-implementing Spring Security's internal verification chain.
+ */
+@Slf4j
 public class CustomDaoAuthenticationProvider extends DaoAuthenticationProvider {
 
     private final LoginActivator loginActivator;
     private final MailService mailService;
-
     private final UserService userService;
     private final UserRepository userRepository;
 
-    public CustomDaoAuthenticationProvider(LoginActivator loginActivator, MailService mailService, UserService userService, UserRepository userRepository){
-
+    public CustomDaoAuthenticationProvider(LoginActivator loginActivator, MailService mailService,
+                                           UserService userService, UserRepository userRepository) {
         this.loginActivator = loginActivator;
         this.mailService = mailService;
         this.userService = userService;
@@ -30,37 +37,22 @@ public class CustomDaoAuthenticationProvider extends DaoAuthenticationProvider {
     }
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws    AuthenticationException {
-        String username = authentication.getName();
-        String presentedPassword = authentication.getCredentials().toString();
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+        try {
+            return super.authenticate(authentication);
 
-        UserDetails user = getUserDetailsService().loadUserByUsername(username);
-
-        if (!getPasswordEncoder().matches(presentedPassword, user.getPassword())) {
-            throw new BadCredentialsException("Bad credentials");
+        } catch (DisabledException ex) {
+            String username = authentication.getName();
+            log.info("Account not activated for user: {} — sending activation code", username);
+            try {
+                User userFromDb = userRepository.findByNeptun(username);
+                String token = loginActivator.activationTokenGenerator();
+                userService.saveActivationCode(userFromDb, token);
+                mailService.sendMail(userFromDb.getEmail(), "Activation code", token);
+            } catch (Exception mailEx) {
+                log.error("Failed to send activation email to user {}: {}", username, mailEx.getMessage(), mailEx);
+            }
+            throw ex;   // rethrow so AuthFilter.unsuccessfulAuthentication() returns 409
         }
-
-        if (!user.isEnabled()) {
-
-            User userFromDb = userRepository.findByNeptun(username);
-                    String token = loginActivator.activationTokenGenerator();
-                    userService.saveActivationCode(userFromDb, token);
-
-                    mailService.sendMail(userFromDb.getEmail(),
-                            "This is the activation code: ",
-                            token);
-
-            throw new DisabledException("User is disabled");
-        }
-
-        // (Optional) You can perform other checks here, such as checking account locked/expired, etc.
-
-        // 3. If everything is fine, create a successful authentication token.
-        // You might want to call additional methods (like creating authorities) as needed.
-        return createSuccessAuthentication(user, authentication,user);
+    }
 }
-}
-
-
-
-

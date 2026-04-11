@@ -3,16 +3,18 @@ package shako.schoolmanagement.entity;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import shako.schoolmanagement.validator.ValidEmail;
 import shako.schoolmanagement.validator.ValidNeptunCode;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -22,8 +24,9 @@ import java.util.*;
 @Table(name = "user")
 @Data
 @Inheritance(strategy = InheritanceType.JOINED)
+@EntityListeners(AuditingEntityListener.class)
 @JsonIdentityInfo(
-        generator =  ObjectIdGenerators.PropertyGenerator.class,
+        generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "userId")
 public class User {
 
@@ -33,6 +36,7 @@ public class User {
     private int userId;
 
     @Column(name = "password")
+    @JsonIgnore
     private String password;
 
     @Column(name = "first_name")
@@ -49,9 +53,11 @@ public class User {
     @ValidEmail
     private String email;
 
-    @Column(name = "created")
+    @CreatedDate
+    @Column(name = "created", updatable = false)
     private LocalDateTime created;
 
+    @LastModifiedDate
     @Column(name = "last_updated")
     private Date lastUpdated;
 
@@ -64,26 +70,35 @@ public class User {
     @Column(name = "country")
     private String country;
 
+    @JsonIgnore
     @Column(name = "social_security_number")
     private String socialSecurityNumber;
 
+    @JsonIgnore
     @Column(name = "activation_code")
     private String activationCode;
+
+    @CreatedBy
+    @Column(name = "created_by", updatable = false)
+    private String createdBy;
+
+    /** Token sent via email for password reset. */
+    @JsonIgnore
+    @Column(name = "password_reset_token")
+    private String passwordResetToken;
+
+    /** Expiry of the password reset token. */
+    @JsonIgnore
+    @Column(name = "password_reset_token_expiry")
+    private LocalDateTime passwordResetTokenExpiry;
 
     public User(int userId) {
         this.userId = userId;
     }
 
-    public User(int userId,
-                String password,
-                String firstName,
-                String lastName,
-                String neptunCode,
-                String email,
-                LocalDateTime created,
-                List<Role> roles,
-                String country) {
-
+    public User(int userId, String password, String firstName, String lastName,
+                String neptunCode, String email, LocalDateTime created,
+                List<Role> roles, String country) {
         this.userId = userId;
         this.password = password;
         this.firstName = firstName;
@@ -91,31 +106,24 @@ public class User {
         this.neptunCode = neptunCode;
         this.email = email;
         this.created = created;
-        this.roles=roles;
+        this.roles = roles;
         this.country = country;
-
     }
 
-    public User(int userId,
-                String neptunCode,
-                String email){
+    public User(int userId, String neptunCode, String email) {
         this.userId = userId;
         this.neptunCode = neptunCode;
         this.email = email;
     }
 
-
-    public User() {
-    }
+    public User() { }
 
     @ManyToMany(fetch = FetchType.EAGER)
     @ToString.Exclude
     @JoinTable(
-            name="user_role",
+            name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    //@ToString.Exclude
-    //@JsonIgnore
     private List<Role> roles = new ArrayList<>();
 }

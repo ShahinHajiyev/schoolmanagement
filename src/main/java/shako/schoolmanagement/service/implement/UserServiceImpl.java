@@ -1,10 +1,10 @@
 package shako.schoolmanagement.service.implement;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import shako.schoolmanagement.dto.ActivationCodeDto;
-import shako.schoolmanagement.dto.StudentUserDto;
+import shako.schoolmanagement.dto.*;
 import shako.schoolmanagement.dtomapper.StudentUserMapper;
 import shako.schoolmanagement.dtomapper.UserMapper;
 import shako.schoolmanagement.entity.Role;
@@ -15,64 +15,62 @@ import shako.schoolmanagement.exception.StudentNotExistsException;
 import shako.schoolmanagement.repository.RoleRepository;
 import shako.schoolmanagement.repository.StudentRepository;
 import shako.schoolmanagement.repository.UserRepository;
+import shako.schoolmanagement.service.inter.MailService;
 import shako.schoolmanagement.service.inter.UserService;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.UUID;
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
-
 
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final StudentUserMapper studentUserMapper;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final RoleRepository roleRepository;
+    private final MailService mailService;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, StudentRepository studentRepository, UserMapper userMapper, StudentUserMapper studentUserMapper, BCryptPasswordEncoder bCryptPasswordEncoder, RoleRepository roleRepository) {
+    public UserServiceImpl(UserRepository userRepository, StudentRepository studentRepository,
+                           UserMapper userMapper, StudentUserMapper studentUserMapper,
+                           BCryptPasswordEncoder bCryptPasswordEncoder,
+                           RoleRepository roleRepository, MailService mailService) {
         this.userRepository = userRepository;
         this.studentRepository = studentRepository;
         this.studentUserMapper = studentUserMapper;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.roleRepository = roleRepository;
+        this.mailService = mailService;
     }
-
 
     @Override
     public void register(StudentUserDto studentUserDto) {
-
+        log.info("Registering student with email: {}", studentUserDto.getEmail());
         Student studentFromDB = userRepository.findStudentByEmail(studentUserDto.getEmail());
-
         if (studentFromDB == null) {
             throw new StudentNotExistsException("Student does not exist");
         }
-
-        //Optional<User> studentFromDB = userRepository.findByEmail(studentUserDto.getEmail());
         Student student = studentUserMapper.dtoToStudentEntity(studentUserDto);
         student.setNeptunCode(studentFromDB.getNeptunCode().toUpperCase());
 
         if (student.getEmail().equals(studentFromDB.getEmail()) &&
                 student.getNeptunCode().equals(studentFromDB.getNeptunCode()) &&
                 studentFromDB.getCreated() == null) {
-
             student.setUserId(studentFromDB.getUserId());
             student.setPassword(bCryptPasswordEncoder.encode(studentUserDto.getPassword()));
             student.setCreated(LocalDateTime.now());
-            Role roles = roleRepository.findByRoleName("ROLE_USER");
-            student.setRoles(Collections.singletonList(roles));
+            Role role = roleRepository.findByRoleName("ROLE_USER");
+            student.setRoles(Collections.singletonList(role));
             student.setIsActive(false);
             studentRepository.save(student);
-        }
-
-        else {
+            log.info("Student registered: {}", student.getNeptunCode());
+        } else {
             throw new StudentAlreadyExistsException("Student exists");
         }
-
     }
-
-
 
     @Override
     public Boolean isUserExistsByEmail(String email) {
@@ -81,27 +79,54 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void activateUser(ActivationCodeDto activationCode) {
-
-        //Optional<User> user = this.userRepository.findByNeptunCode(activationCode.getNeptunCode());
-        User user = this.userRepository.findByNeptun(activationCode.getNeptunCode());
+        log.info("Activating user: {}", activationCode.getNeptunCode());
+        User user = userRepository.findByNeptun(activationCode.getNeptunCode());
         if (!user.getActivationCode().equals(activationCode.getActivationCode())) {
+            log.warn("Wrong activation code for user: {}", activationCode.getNeptunCode());
             throw new RuntimeException("Activation failed");
         }
-
         user.setIsActive(true);
         userRepository.save(user);
+        log.info("User {} activated", activationCode.getNeptunCode());
     }
 
     @Override
     public void saveActivationCode(User currentUser, String activationCode) {
-
-            //User user = userRepository.findByNeptun(currentUser.getNeptunCode());
-            currentUser.setActivationCode(activationCode);
-            userRepository.saveActivationCode(currentUser.getNeptunCode(), activationCode);
-
-
-
+        currentUser.setActivationCode(activationCode);
+        userRepository.saveActivationCode(currentUser.getNeptunCode(), activationCode);
     }
 
+    @Override
+    public void forgotPassword(ForgotPasswordDto dto) {
+        log.info("Forgot password request for email: {}", dto.getEmail());
+        userRepository.findByEmail(dto.getEmail()).ifPresent(user -> {
+            String token = UUID.randomUUID().toString();
+            user.setPasswordResetToken(token);
+            user.setPasswordResetTokenExpiry(LocalDateTime.now().plusHours(1));
+            userRepository.save(user);
+            mailService.sendMail(user.getEmail(), "Password Reset",
+                    "Your password reset token: " + token + " (valid for 1 hour)");
+            log.info("Password reset token sent to: {}", dto.getEmail());
+        });
+        // Always return success to avoid user enumeration
+    }
 
+    @Override
+    public void resetPassword(ResetPasswordDto dto) {
+        log.info("Password reset attempt with token");
+        User user = userRepository.findByPasswordResetToken(dto.getResetToken())
+                .orElseThrow(() -> new RuntimeException("Invalid or expired reset token"));
+
+        if (user.getPasswordResetTokenExpiry() == null ||
+                user.getPasswordResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            log.warn("Expired password reset token used");
+            throw new RuntimeException("Reset token has expired");
+        }
+
+        user.setPassword(bCryptPasswordEncoder.encode(dto.getNewPassword()));
+        user.setPasswordResetToken(null);
+        user.setPasswordResetTokenExpiry(null);
+        userRepository.save(user);
+        log.info("Password reset successfully for user: {}", user.getNeptunCode());
+    }
 }

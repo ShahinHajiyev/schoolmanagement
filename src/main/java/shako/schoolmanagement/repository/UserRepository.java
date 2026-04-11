@@ -45,5 +45,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query(value = "UPDATE USER u SET u.activation_code = :activationCode where u.neptun_code = :neptunCode", nativeQuery = true)
     void saveActivationCode(String neptunCode, String activationCode);
 
-
+    Optional<User> findByPasswordResetToken(String token);
 }

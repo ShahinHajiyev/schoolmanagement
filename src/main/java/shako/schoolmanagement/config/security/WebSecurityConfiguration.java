@@ -7,11 +7,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import shako.schoolmanagement.config.auth.AppUserDetailsService;
@@ -23,18 +23,13 @@ import shako.schoolmanagement.validator.LoginActivator;
 import javax.servlet.Filter;
 
 @Configuration
-@EnableWebSecurity/*(debug = true)*/
-//@RequiredArgsConstructor
+@EnableWebSecurity
+@EnableMethodSecurity
 public class WebSecurityConfiguration {
-
-
-
-
 
     @Autowired
     @Qualifier("handlerExceptionResolver")
-    private  HandlerExceptionResolver handlerExceptionResolver;
-
+    private HandlerExceptionResolver handlerExceptionResolver;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -43,8 +38,7 @@ public class WebSecurityConfiguration {
     private AuthenticationManagerBuilder authenticationManagerBuilder;
 
     @Autowired
-    private  AppUserDetailsService appUserDetailsService;
-
+    private AppUserDetailsService appUserDetailsService;
 
     @Autowired
     private UserRepository userRepository;
@@ -58,57 +52,50 @@ public class WebSecurityConfiguration {
     @Autowired
     private UserService userService;
 
-
-
+    @Autowired
+    private DelegatedAuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-
         return http.cors().and()
-                .authorizeRequests(customizer ->
-                customizer
-                .antMatchers(HttpMethod.GET, "index", "/css", "/js","/error").permitAll()
-                .antMatchers(HttpMethod.POST, "/api/login").permitAll()
-                .antMatchers("/api/user/register").permitAll()
+                .authorizeRequests(customizer -> customizer
+                        .antMatchers(HttpMethod.GET, "index", "/css", "/js", "/error").permitAll()
+                        .antMatchers(HttpMethod.POST, "/api/login").permitAll()
+                        .antMatchers("/api/user/register").permitAll()
                         .antMatchers("/api/user/activate").permitAll()
-                .antMatchers("/api/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
+                        .antMatchers("/api/user/forgot-password").permitAll()
+                        .antMatchers("/api/user/reset-password").permitAll()
+                        .antMatchers("/api/auth/refresh").permitAll()
+                        .antMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .antMatchers("/api/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .addFilterBefore(new TokenVerifier(handlerExceptionResolver), AuthFilter.class)
+                // Handle missing/absent token (no auth at all) with a JSON 401
+                .exceptionHandling()
+                    .authenticationEntryPoint(authenticationEntryPoint)
+                .and()
+                .addFilterBefore(new TokenVerifier(), AuthFilter.class)
                 .addFilter(getAuthFilter())
-
-
-                        .authenticationProvider(customDaoAuthenticationProvider())
-
-        .build();
+                .authenticationProvider(customDaoAuthenticationProvider())
+                .build();
     }
 
     private Filter getAuthFilter() {
-
-        AuthFilter authFilter = new AuthFilter( authenticationManagerBuilder.getOrBuild(),
-                                                handlerExceptionResolver);
+        AuthFilter authFilter = new AuthFilter(authenticationManagerBuilder.getOrBuild(),
+                                               handlerExceptionResolver);
         authFilter.setFilterProcessesUrl("/api/login");
-
         return authFilter;
     }
 
     @Bean
     public CustomDaoAuthenticationProvider customDaoAuthenticationProvider() {
-        CustomDaoAuthenticationProvider provider = new CustomDaoAuthenticationProvider(loginActivator,
-                                                                                       mailService,
-                                                                                       userService,
-                                                                                       userRepository);
-
+        CustomDaoAuthenticationProvider provider = new CustomDaoAuthenticationProvider(
+                loginActivator, mailService, userService, userRepository);
         provider.setUserDetailsService(appUserDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
-
-
-
-
 }

@@ -1,10 +1,10 @@
 package shako.schoolmanagement.service.inter;
 
-import shako.schoolmanagement.entity.Semester;
+import shako.schoolmanagement.dto.SemesterDto;
 
 import java.util.List;
 
 public interface SemesterService {
 
-    List<Semester> getAllSemesters();
+    List<SemesterDto> getAllSemesters();
 }
