@@ -16,6 +16,8 @@ public interface UserService {
 
     void saveActivationCode(User user, String activationCode);
 
+    void resendActivationCode(String neptunCode);
+
     void forgotPassword(ForgotPasswordDto dto);
 
     void resetPassword(ResetPasswordDto dto);

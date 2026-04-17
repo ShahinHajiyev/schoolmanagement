@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import shako.schoolmanagement.entity.Student;
 import shako.schoolmanagement.entity.User;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
@@ -42,8 +43,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE USER u SET u.activation_code = :activationCode where u.neptun_code = :neptunCode", nativeQuery = true)
-    void saveActivationCode(String neptunCode, String activationCode);
+    @Query(value = "UPDATE USER u SET u.activation_code = :activationCode, u.activation_code_expiry = :expiry WHERE u.neptun_code = :neptunCode", nativeQuery = true)
+    void saveActivationCode(String neptunCode, String activationCode, LocalDateTime expiry);
 
     Optional<User> findByPasswordResetToken(String token);
 }

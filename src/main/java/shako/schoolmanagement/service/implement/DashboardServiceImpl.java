@@ -43,7 +43,11 @@ public class DashboardServiceImpl implements DashboardService {
         log.debug("Fetching 10 most recent enrollments");
         List<Enrollment> recent = enrollmentRepository.findRecentEnrollments(PageRequest.of(0, 10));
         return recent.stream().map(e -> {
-            String studentName = e.getStudent().getFirstName() + " " + e.getStudent().getLastName();
+            String firstName = e.getStudent().getFirstName();
+            String lastName = e.getStudent().getLastName();
+            String studentName = (firstName != null && lastName != null)
+                    ? firstName + " " + lastName
+                    : e.getStudent().getNeptunCode();
             String courseName = e.getCourse().getCourseName();
             return new RecentEnrollmentDto(studentName, courseName, e.getDateOfRegister());
         }).collect(Collectors.toList());

@@ -78,6 +78,10 @@ public class User {
     @Column(name = "activation_code")
     private String activationCode;
 
+    @JsonIgnore
+    @Column(name = "activation_code_expiry")
+    private LocalDateTime activationCodeExpiry;
+
     @CreatedBy
     @Column(name = "created_by", updatable = false)
     private String createdBy;

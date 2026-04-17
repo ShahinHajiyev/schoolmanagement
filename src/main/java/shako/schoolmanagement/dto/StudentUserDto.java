@@ -18,8 +18,8 @@ public class StudentUserDto {
 /*    @NotNull
     private int userId;*/
 
-    @NotNull
-    private String username;
+//    @NotNull
+//    private String username;
 
     @NotNull
     private String password;

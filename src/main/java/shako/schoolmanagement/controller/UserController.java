@@ -31,6 +31,12 @@ public class UserController {
         return ResponseEntity.ok("Activation successful");
     }
 
+    @PostMapping("/resend-activation")
+    public ResponseEntity<String> resendActivation(@RequestParam String neptunCode) {
+        userService.resendActivationCode(neptunCode);
+        return ResponseEntity.ok("If the account exists and is not yet active, a new code has been sent");
+    }
+
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestBody @Valid ForgotPasswordDto dto) {
         userService.forgotPassword(dto);

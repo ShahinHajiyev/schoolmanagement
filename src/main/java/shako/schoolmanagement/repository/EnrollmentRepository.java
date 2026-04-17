@@ -46,7 +46,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
     @Query("SELECT COUNT(e) FROM Enrollment e WHERE e.isRegistered = true")
     long countActiveEnrollments();
 
-    @Query("SELECT e FROM Enrollment e ORDER BY e.dateOfRegister DESC")
+    @Query("SELECT e FROM Enrollment e JOIN FETCH e.student JOIN FETCH e.course ORDER BY e.dateOfRegister DESC")
     List<Enrollment> findRecentEnrollments(Pageable pageable);
 
     @Query("SELECT DISTINCT e.student FROM Enrollment e WHERE e.course.courseId = :courseId AND e.isRegistered = true")

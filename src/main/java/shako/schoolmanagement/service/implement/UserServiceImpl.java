@@ -17,6 +17,7 @@ import shako.schoolmanagement.repository.StudentRepository;
 import shako.schoolmanagement.repository.UserRepository;
 import shako.schoolmanagement.service.inter.MailService;
 import shako.schoolmanagement.service.inter.UserService;
+import shako.schoolmanagement.validator.LoginActivator;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -32,18 +33,21 @@ public class UserServiceImpl implements UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final RoleRepository roleRepository;
     private final MailService mailService;
+    private final LoginActivator loginActivator;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, StudentRepository studentRepository,
                            UserMapper userMapper, StudentUserMapper studentUserMapper,
                            BCryptPasswordEncoder bCryptPasswordEncoder,
-                           RoleRepository roleRepository, MailService mailService) {
+                           RoleRepository roleRepository, MailService mailService,
+                           LoginActivator loginActivator) {
         this.userRepository = userRepository;
         this.studentRepository = studentRepository;
         this.studentUserMapper = studentUserMapper;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.roleRepository = roleRepository;
         this.mailService = mailService;
+        this.loginActivator = loginActivator;
     }
 
     @Override
@@ -58,7 +62,7 @@ public class UserServiceImpl implements UserService {
 
         if (student.getEmail().equals(studentFromDB.getEmail()) &&
                 student.getNeptunCode().equals(studentFromDB.getNeptunCode()) &&
-                studentFromDB.getCreated() == null) {
+                studentFromDB.getLastUpdated() == null) {
             student.setUserId(studentFromDB.getUserId());
             student.setPassword(bCryptPasswordEncoder.encode(studentUserDto.getPassword()));
             student.setCreated(LocalDateTime.now());
@@ -85,6 +89,10 @@ public class UserServiceImpl implements UserService {
             log.warn("Wrong activation code for user: {}", activationCode.getNeptunCode());
             throw new RuntimeException("Activation failed");
         }
+        if (user.getActivationCodeExpiry() != null && user.getActivationCodeExpiry().isBefore(LocalDateTime.now())) {
+            log.warn("Expired activation code used for user: {}", activationCode.getNeptunCode());
+            throw new RuntimeException("Activation code has expired");
+        }
         user.setIsActive(true);
         userRepository.save(user);
         log.info("User {} activated", activationCode.getNeptunCode());
@@ -92,8 +100,28 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void saveActivationCode(User currentUser, String activationCode) {
+        LocalDateTime expiry = LocalDateTime.now().plusHours(24);
         currentUser.setActivationCode(activationCode);
-        userRepository.saveActivationCode(currentUser.getNeptunCode(), activationCode);
+        currentUser.setActivationCodeExpiry(expiry);
+        userRepository.saveActivationCode(currentUser.getNeptunCode(), activationCode, expiry);
+    }
+
+    @Override
+    public void resendActivationCode(String neptunCode) {
+        log.info("Resend activation code request for: {}", neptunCode);
+        User user = userRepository.findByNeptun(neptunCode);
+        if (user == null) {
+            log.warn("Resend activation: user not found for neptunCode {}", neptunCode);
+            return; // silent — avoid user enumeration
+        }
+        if (Boolean.TRUE.equals(user.getIsActive())) {
+            log.info("Resend activation: user {} is already active", neptunCode);
+            return;
+        }
+        String token = loginActivator.activationTokenGenerator();
+        saveActivationCode(user, token);
+        mailService.sendMail(user.getEmail(), "Activation code", token);
+        log.info("Activation code resent to: {}", user.getEmail());
     }
 
     @Override
