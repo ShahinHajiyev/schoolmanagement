@@ -13,6 +13,7 @@ import shako.schoolmanagement.entity.User;
 import shako.schoolmanagement.exception.StudentAlreadyExistsException;
 import shako.schoolmanagement.exception.StudentNotExistsException;
 import shako.schoolmanagement.repository.RoleRepository;
+import shako.schoolmanagement.repository.SemesterRepository;
 import shako.schoolmanagement.repository.StudentRepository;
 import shako.schoolmanagement.repository.UserRepository;
 import shako.schoolmanagement.service.inter.MailService;
@@ -32,6 +33,7 @@ public class UserServiceImpl implements UserService {
     private final StudentUserMapper studentUserMapper;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final RoleRepository roleRepository;
+    private final SemesterRepository semesterRepository;
     private final MailService mailService;
     private final LoginActivator loginActivator;
 
@@ -39,13 +41,14 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(UserRepository userRepository, StudentRepository studentRepository,
                            UserMapper userMapper, StudentUserMapper studentUserMapper,
                            BCryptPasswordEncoder bCryptPasswordEncoder,
-                           RoleRepository roleRepository, MailService mailService,
-                           LoginActivator loginActivator) {
+                           RoleRepository roleRepository, SemesterRepository semesterRepository,
+                           MailService mailService, LoginActivator loginActivator) {
         this.userRepository = userRepository;
         this.studentRepository = studentRepository;
         this.studentUserMapper = studentUserMapper;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.roleRepository = roleRepository;
+        this.semesterRepository = semesterRepository;
         this.mailService = mailService;
         this.loginActivator = loginActivator;
     }
@@ -62,13 +65,14 @@ public class UserServiceImpl implements UserService {
 
         if (student.getEmail().equals(studentFromDB.getEmail()) &&
                 student.getNeptunCode().equals(studentFromDB.getNeptunCode()) &&
-                studentFromDB.getLastUpdated() == null) {
+                studentFromDB.getIsActive() == null) {
             student.setUserId(studentFromDB.getUserId());
             student.setPassword(bCryptPasswordEncoder.encode(studentUserDto.getPassword()));
             student.setCreated(LocalDateTime.now());
             Role role = roleRepository.findByRoleName("ROLE_USER");
             student.setRoles(Collections.singletonList(role));
             student.setIsActive(false);
+            student.setSemester(semesterRepository.findByName("first"));
             studentRepository.save(student);
             log.info("Student registered: {}", student.getNeptunCode());
         } else {
