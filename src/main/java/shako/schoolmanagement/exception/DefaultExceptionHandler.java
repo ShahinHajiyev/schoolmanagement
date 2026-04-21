@@ -80,6 +80,14 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.badRequest().body(body);
     }
 
+    // ── 400 (IllegalArgument) ─────────────────────────────────────────────────
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        log.warn("Bad request: {}", ex.getMessage());
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
     // ── Catch-all ────────────────────────────────────────────────────────────
 
     @ExceptionHandler(RuntimeException.class)

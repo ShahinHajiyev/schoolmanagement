@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import shako.schoolmanagement.dto.AddCourseDto;
 import shako.schoolmanagement.dto.AdminStudentDto;
 import shako.schoolmanagement.dto.AdminUserListDto;
+import shako.schoolmanagement.entity.Program;
+import shako.schoolmanagement.repository.ProgramRepository;
 import shako.schoolmanagement.service.inter.AdminService;
 import shako.schoolmanagement.service.inter.CourseService;
 
@@ -24,11 +26,14 @@ public class AdminController {
     @Autowired
     private CourseService courseService;
 
+    @Autowired
+    private ProgramRepository programRepository;
+
     @PostMapping("/addStudentByAdmin")
-    public ResponseEntity<String> addStudent(@Valid @RequestBody AdminStudentDto adminStudentDto) {
+    public ResponseEntity<Void> addStudent(@Valid @RequestBody AdminStudentDto adminStudentDto) {
         log.info("POST /admin/addStudentByAdmin — neptunCode: {}", adminStudentDto.getNeptunCode());
         adminService.addUserByAdmin(adminStudentDto);
-        return ResponseEntity.ok("Student added successfully");
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/users")
@@ -38,16 +43,22 @@ public class AdminController {
     }
 
     @PostMapping("/addcourse")
-    public ResponseEntity<String> addCourse(@Valid @RequestBody AddCourseDto addCourseDto) {
+    public ResponseEntity<Void> addCourse(@Valid @RequestBody AddCourseDto addCourseDto) {
         log.info("POST /admin/addcourse — name: '{}'", addCourseDto.getCourseName());
         courseService.addCourse(addCourseDto);
-        return ResponseEntity.ok("Course added successfully");
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/course/{id}")
-    public ResponseEntity<String> deleteCourse(@PathVariable int id) {
+    public ResponseEntity<Void> deleteCourse(@PathVariable int id) {
         log.info("DELETE /admin/course/{}", id);
         courseService.deleteCourse(id);
-        return ResponseEntity.ok("Course deleted successfully");
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/programs")
+    public List<Program> getPrograms() {
+        log.info("GET /admin/programs");
+        return programRepository.findAll();
     }
 }

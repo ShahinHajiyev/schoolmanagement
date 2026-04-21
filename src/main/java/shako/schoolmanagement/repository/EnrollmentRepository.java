@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer> {
 
-    @Query(value = "Select * from enrollment", nativeQuery = true)
+    @Query("SELECT e FROM Enrollment e JOIN FETCH e.student JOIN FETCH e.course")
     List<Enrollment> getAllEnrollments();
 
     Enrollment findByEnrollmentId(Integer enrollmentId);

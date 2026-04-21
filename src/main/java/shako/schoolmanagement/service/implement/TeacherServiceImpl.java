@@ -3,6 +3,7 @@ package shako.schoolmanagement.service.implement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import shako.schoolmanagement.dto.CourseDto;
 import shako.schoolmanagement.dto.EnrollmentDto;
 import shako.schoolmanagement.dto.StudentDto;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class TeacherServiceImpl implements TeacherService {
 
     private final TeacherRepository teacherRepository;

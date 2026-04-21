@@ -96,6 +96,10 @@ public class User {
     @Column(name = "password_reset_token_expiry")
     private LocalDateTime passwordResetTokenExpiry;
 
+    @Column(name = "is_teacher")
+    private Boolean isTeacher;
+
+
     public User(int userId) {
         this.userId = userId;
     }

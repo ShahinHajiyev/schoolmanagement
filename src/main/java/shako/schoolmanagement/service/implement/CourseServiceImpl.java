@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import shako.schoolmanagement.dto.*;
 import shako.schoolmanagement.dtomapper.CourseMapper;
 import shako.schoolmanagement.dtomapper.SemesterForGeneralCoursesMapper;
@@ -20,6 +21,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CourseServiceImpl implements CourseService {
 
     @Autowired private CourseRepository courseRepository;

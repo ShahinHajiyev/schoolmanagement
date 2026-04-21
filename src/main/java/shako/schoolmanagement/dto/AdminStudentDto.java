@@ -8,6 +8,7 @@ import shako.schoolmanagement.validator.ValidEmail;
 import shako.schoolmanagement.validator.ValidNeptunCode;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -25,4 +26,6 @@ public class AdminStudentDto {
 
     @NotNull
     private String selectedUser;
+
+    private List<Integer> programIds;
 }

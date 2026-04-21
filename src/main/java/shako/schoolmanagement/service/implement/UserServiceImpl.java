@@ -6,15 +6,17 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import shako.schoolmanagement.dto.*;
 import shako.schoolmanagement.dtomapper.StudentUserMapper;
-import shako.schoolmanagement.dtomapper.UserMapper;
+import shako.schoolmanagement.dtomapper.TeacherUserMapper;
 import shako.schoolmanagement.entity.Role;
 import shako.schoolmanagement.entity.Student;
+import shako.schoolmanagement.entity.Teacher;
 import shako.schoolmanagement.entity.User;
 import shako.schoolmanagement.exception.StudentAlreadyExistsException;
 import shako.schoolmanagement.exception.StudentNotExistsException;
 import shako.schoolmanagement.repository.RoleRepository;
 import shako.schoolmanagement.repository.SemesterRepository;
 import shako.schoolmanagement.repository.StudentRepository;
+import shako.schoolmanagement.repository.TeacherRepository;
 import shako.schoolmanagement.repository.UserRepository;
 import shako.schoolmanagement.service.inter.MailService;
 import shako.schoolmanagement.service.inter.UserService;
@@ -22,6 +24,7 @@ import shako.schoolmanagement.validator.LoginActivator;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -30,7 +33,9 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
+    private final TeacherRepository teacherRepository;
     private final StudentUserMapper studentUserMapper;
+    private final TeacherUserMapper teacherUserMapper;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final RoleRepository roleRepository;
     private final SemesterRepository semesterRepository;
@@ -38,14 +43,21 @@ public class UserServiceImpl implements UserService {
     private final LoginActivator loginActivator;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, StudentRepository studentRepository,
-                           UserMapper userMapper, StudentUserMapper studentUserMapper,
+    public UserServiceImpl(UserRepository userRepository,
+                           StudentRepository studentRepository,
+                           TeacherRepository teacherRepository,
+                           StudentUserMapper studentUserMapper,
+                           TeacherUserMapper teacherUserMapper,
                            BCryptPasswordEncoder bCryptPasswordEncoder,
-                           RoleRepository roleRepository, SemesterRepository semesterRepository,
-                           MailService mailService, LoginActivator loginActivator) {
+                           RoleRepository roleRepository,
+                           SemesterRepository semesterRepository,
+                           MailService mailService,
+                           LoginActivator loginActivator) {
         this.userRepository = userRepository;
         this.studentRepository = studentRepository;
+        this.teacherRepository = teacherRepository;
         this.studentUserMapper = studentUserMapper;
+        this.teacherUserMapper = teacherUserMapper;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.roleRepository = roleRepository;
         this.semesterRepository = semesterRepository;
@@ -54,30 +66,46 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void register(StudentUserDto studentUserDto) {
-        log.info("Registering student with email: {}", studentUserDto.getEmail());
-        Student studentFromDB = userRepository.findStudentByEmail(studentUserDto.getEmail());
-        if (studentFromDB == null) {
-            throw new StudentNotExistsException("Student does not exist");
-        }
-        Student student = studentUserMapper.dtoToStudentEntity(studentUserDto);
-        student.setNeptunCode(studentFromDB.getNeptunCode().toUpperCase());
+    public void register(StudentUserDto dto) {
+        log.info("Registering user with email: {}", dto.getEmail());
+        User userFromDB = userRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new StudentNotExistsException("User does not exist"));
 
-        if (student.getEmail().equals(studentFromDB.getEmail()) &&
-                student.getNeptunCode().equals(studentFromDB.getNeptunCode()) &&
-                studentFromDB.getIsActive() == null) {
-            student.setUserId(studentFromDB.getUserId());
-            student.setPassword(bCryptPasswordEncoder.encode(studentUserDto.getPassword()));
-            student.setCreated(LocalDateTime.now());
-            Role role = roleRepository.findByRoleName("ROLE_USER");
-            student.setRoles(Collections.singletonList(role));
-            student.setIsActive(false);
+        if (!dto.getEmail().equals(userFromDB.getEmail()) ||
+                !dto.getNeptunCode().toUpperCase().equals(userFromDB.getNeptunCode()) ||
+                userFromDB.getIsActive() != null) {
+            throw new StudentAlreadyExistsException("User already registered");
+        }
+
+        User savedUser;
+        if (Boolean.TRUE.equals(userFromDB.getIsTeacher())) {
+            Teacher teacher = teacherUserMapper.dtoToTeacherEntity(dto);
+            populateRegistrationFields(teacher, dto, userFromDB);
+            teacher.setRoles(Collections.singletonList(roleRepository.findByRoleName("ROLE_USER")));
+            teacherRepository.save(teacher);
+            savedUser = teacher;
+            log.info("Teacher registered: {}", teacher.getNeptunCode());
+        } else {
+            Student student = studentUserMapper.dtoToStudentEntity(dto);
+            populateRegistrationFields(student, dto, userFromDB);
+            student.setRoles(Collections.singletonList(roleRepository.findByRoleName("ROLE_USER")));
             student.setSemester(semesterRepository.findByName("first"));
             studentRepository.save(student);
+            savedUser = student;
             log.info("Student registered: {}", student.getNeptunCode());
-        } else {
-            throw new StudentAlreadyExistsException("Student exists");
         }
+        String token = loginActivator.activationTokenGenerator();
+        saveActivationCode(savedUser, token);
+        mailService.sendMail(savedUser.getEmail(), "Activation code", token);
+        log.info("Activation code sent to: {}", savedUser.getEmail());
+    }
+
+    private void populateRegistrationFields(User user, StudentUserDto dto, User fromDB) {
+        user.setUserId(fromDB.getUserId());
+        user.setNeptunCode(fromDB.getNeptunCode().toUpperCase());
+        user.setPassword(bCryptPasswordEncoder.encode(dto.getPassword()));
+        user.setCreated(LocalDateTime.now());
+        user.setIsActive(false);
     }
 
     @Override
@@ -88,14 +116,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public void activateUser(ActivationCodeDto activationCode) {
         log.info("Activating user: {}", activationCode.getNeptunCode());
-        User user = userRepository.findByNeptun(activationCode.getNeptunCode());
-        if (!user.getActivationCode().equals(activationCode.getActivationCode())) {
-            log.warn("Wrong activation code for user: {}", activationCode.getNeptunCode());
-            throw new RuntimeException("Activation failed");
-        }
+        User user = userRepository.findByNeptunCode(activationCode.getNeptunCode())
+                .orElseThrow(() -> new StudentNotExistsException("User not found"));
         if (user.getActivationCodeExpiry() != null && user.getActivationCodeExpiry().isBefore(LocalDateTime.now())) {
             log.warn("Expired activation code used for user: {}", activationCode.getNeptunCode());
-            throw new RuntimeException("Activation code has expired");
+            throw new IllegalArgumentException("Activation code has expired");
+        }
+        if (!activationCode.getActivationCode().equals(user.getActivationCode())) {
+            log.warn("Wrong activation code for user: {}", activationCode.getNeptunCode());
+            throw new IllegalArgumentException("Invalid activation code");
         }
         user.setIsActive(true);
         userRepository.save(user);
@@ -113,11 +142,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void resendActivationCode(String neptunCode) {
         log.info("Resend activation code request for: {}", neptunCode);
-        User user = userRepository.findByNeptun(neptunCode);
-        if (user == null) {
+        Optional<User> userOpt = userRepository.findByNeptunCode(neptunCode);
+        if (userOpt.isEmpty()) {
             log.warn("Resend activation: user not found for neptunCode {}", neptunCode);
             return; // silent — avoid user enumeration
         }
+        User user = userOpt.get();
         if (Boolean.TRUE.equals(user.getIsActive())) {
             log.info("Resend activation: user {} is already active", neptunCode);
             return;
@@ -140,7 +170,6 @@ public class UserServiceImpl implements UserService {
                     "Your password reset token: " + token + " (valid for 1 hour)");
             log.info("Password reset token sent to: {}", dto.getEmail());
         });
-        // Always return success to avoid user enumeration
     }
 
     @Override

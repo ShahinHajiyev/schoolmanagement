@@ -65,4 +65,14 @@ public class Student extends User{
     @ToString.Exclude
     @JoinColumn(name = "semester_id")
     private Semester semester;
+
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(
+        name = "student_program",
+        joinColumns = @JoinColumn(name = "student_id", referencedColumnName = "id"),
+        inverseJoinColumns = @JoinColumn(name = "program_id", referencedColumnName = "program_id")
+    )
+    @ToString.Exclude
+    private List<Program> programs;
 }

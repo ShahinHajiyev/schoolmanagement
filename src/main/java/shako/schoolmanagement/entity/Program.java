@@ -16,4 +16,7 @@ public class Program {
 
     @Column(name = "program_name")
     private String programName;
+
+    @Column(name = "program_duration")
+    private int programDuration;
 }

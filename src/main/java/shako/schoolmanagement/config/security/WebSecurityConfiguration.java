@@ -63,6 +63,7 @@ public class WebSecurityConfiguration {
                         .antMatchers(HttpMethod.POST, "/api/login").permitAll()
                         .antMatchers("/api/user/register").permitAll()
                         .antMatchers("/api/user/activate").permitAll()
+                        .antMatchers("/api/user/resend-activation").permitAll()
                         .antMatchers("/api/user/forgot-password").permitAll()
                         .antMatchers("/api/user/reset-password").permitAll()
                         .antMatchers("/api/auth/refresh").permitAll()

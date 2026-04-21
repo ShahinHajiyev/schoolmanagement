@@ -20,32 +20,32 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody @Valid StudentUserDto studentUserDto) {
+    public ResponseEntity<Void> register(@RequestBody @Valid StudentUserDto studentUserDto) {
         userService.register(studentUserDto);
-        return ResponseEntity.ok("Student registered successfully");
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/activate")
-    public ResponseEntity<String> activate(@RequestBody @Valid ActivationCodeDto activationCode) {
+    public ResponseEntity<Void> activate(@RequestBody @Valid ActivationCodeDto activationCode) {
         userService.activateUser(activationCode);
-        return ResponseEntity.ok("Activation successful");
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/resend-activation")
-    public ResponseEntity<String> resendActivation(@RequestParam String neptunCode) {
+    public ResponseEntity<Void> resendActivation(@RequestParam String neptunCode) {
         userService.resendActivationCode(neptunCode);
-        return ResponseEntity.ok("If the account exists and is not yet active, a new code has been sent");
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestBody @Valid ForgotPasswordDto dto) {
+    public ResponseEntity<Void> forgotPassword(@RequestBody @Valid ForgotPasswordDto dto) {
         userService.forgotPassword(dto);
-        return ResponseEntity.ok("If an account with that email exists, a reset link has been sent");
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody @Valid ResetPasswordDto dto) {
+    public ResponseEntity<Void> resetPassword(@RequestBody @Valid ResetPasswordDto dto) {
         userService.resetPassword(dto);
-        return ResponseEntity.ok("Password reset successfully");
+        return ResponseEntity.ok().build();
     }
 }
