@@ -56,6 +56,13 @@ public class AdminController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/users/{neptunCode}/unblock-activation")
+    public ResponseEntity<Void> unblockActivation(@PathVariable String neptunCode) {
+        log.info("POST /admin/users/{}/unblock-activation", neptunCode);
+        adminService.unblockActivation(neptunCode);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/programs")
     public List<Program> getPrograms() {
         log.info("GET /admin/programs");

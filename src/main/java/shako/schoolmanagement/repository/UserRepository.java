@@ -40,5 +40,20 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query(value = "UPDATE USER u SET u.activation_code = :activationCode, u.activation_code_expiry = :expiry WHERE u.neptun_code = :neptunCode", nativeQuery = true)
     void saveActivationCode(String neptunCode, String activationCode, LocalDateTime expiry);
 
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE user SET activation_attempts = :attempts, activation_blocked_until = :blockedUntil, activation_block_phase = :phase WHERE neptun_code = :neptunCode", nativeQuery = true)
+    void updateActivationLockout(String neptunCode, int attempts, LocalDateTime blockedUntil, int phase);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE user SET is_active = true, activation_attempts = 0, activation_block_phase = 0, activation_blocked_until = NULL WHERE neptun_code = :neptunCode", nativeQuery = true)
+    void activateAndClearLockout(String neptunCode);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE user SET activation_attempts = 0, activation_block_phase = 0, activation_blocked_until = NULL WHERE neptun_code = :neptunCode", nativeQuery = true)
+    void clearActivationLockout(String neptunCode);
+
     Optional<User> findByPasswordResetToken(String token);
 }

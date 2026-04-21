@@ -12,6 +12,7 @@ import shako.schoolmanagement.entity.Student;
 import shako.schoolmanagement.entity.Teacher;
 import shako.schoolmanagement.entity.User;
 import shako.schoolmanagement.exception.EmailCannotBeEmptyException;
+import shako.schoolmanagement.exception.StudentNotExistsException;
 import shako.schoolmanagement.exception.UserTypeCannotBeEmptyException;
 import shako.schoolmanagement.repository.ProgramRepository;
 import shako.schoolmanagement.repository.StudentRepository;
@@ -105,6 +106,16 @@ public class AdminServiceImpl implements AdminService {
             String role = user.getRoles().isEmpty() ? "UNKNOWN" : user.getRoles().get(0).getRoleName();
             return new AdminUserListDto(user.getNeptunCode(), user.getEmail(), role);
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public void unblockActivation(String neptunCode) {
+        log.info("Admin unblocking activation for: {}", neptunCode);
+        if (!userRepository.findByNeptunCode(neptunCode).isPresent()) {
+            throw new StudentNotExistsException("User not found");
+        }
+        userRepository.clearActivationLockout(neptunCode);
+        log.info("Activation unblocked for: {}", neptunCode);
     }
 
     public void persistUser(User user, AdminStudentDto dto, JpaRepository repository) {

@@ -99,6 +99,16 @@ public class User {
     @Column(name = "is_teacher")
     private Boolean isTeacher;
 
+    @Column(name = "activation_attempts")
+    private int activationAttempts;
+
+    @JsonIgnore
+    @Column(name = "activation_blocked_until")
+    private LocalDateTime activationBlockedUntil;
+
+    @Column(name = "activation_block_phase")
+    private int activationBlockPhase;
+
 
     public User(int userId) {
         this.userId = userId;

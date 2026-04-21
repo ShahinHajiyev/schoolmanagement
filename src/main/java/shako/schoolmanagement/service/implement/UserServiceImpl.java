@@ -118,16 +118,53 @@ public class UserServiceImpl implements UserService {
         log.info("Activating user: {}", activationCode.getNeptunCode());
         User user = userRepository.findByNeptunCode(activationCode.getNeptunCode())
                 .orElseThrow(() -> new StudentNotExistsException("User not found"));
+
+        // Permanent block — requires admin intervention
+        if (user.getActivationBlockPhase() == 3) {
+            log.warn("Permanently blocked activation attempt for: {}", activationCode.getNeptunCode());
+            throw new IllegalArgumentException("Account is permanently locked. Please contact admin.");
+        }
+
+        // Active temporary block
+        if (user.getActivationBlockedUntil() != null
+                && LocalDateTime.now().isBefore(user.getActivationBlockedUntil())) {
+            log.warn("Blocked activation attempt for: {} until {}", activationCode.getNeptunCode(), user.getActivationBlockedUntil());
+            throw new IllegalArgumentException("Too many failed attempts. Try again after " + user.getActivationBlockedUntil());
+        }
+
+        // Block window expired — reset attempt count for new window
+        if (user.getActivationBlockedUntil() != null) {
+            userRepository.updateActivationLockout(activationCode.getNeptunCode(), 0, null, user.getActivationBlockPhase());
+            user.setActivationAttempts(0);
+            user.setActivationBlockedUntil(null);
+        }
+
         if (user.getActivationCodeExpiry() != null && user.getActivationCodeExpiry().isBefore(LocalDateTime.now())) {
             log.warn("Expired activation code used for user: {}", activationCode.getNeptunCode());
             throw new IllegalArgumentException("Activation code has expired");
         }
+
         if (!activationCode.getActivationCode().equals(user.getActivationCode())) {
             log.warn("Wrong activation code for user: {}", activationCode.getNeptunCode());
+            int attempts = user.getActivationAttempts() + 1;
+            int phase = user.getActivationBlockPhase();
+            LocalDateTime blockedUntil = null;
+
+            if (attempts >= 3) {
+                switch (phase) {
+                    case 0 -> { blockedUntil = LocalDateTime.now().plusMinutes(30); phase = 1; }
+                    case 1 -> { blockedUntil = LocalDateTime.now().plusHours(2);    phase = 2; }
+                    case 2 ->   phase = 3;
+                }
+                attempts = 0;
+                log.warn("Activation lockout triggered for: {} — phase now {}", activationCode.getNeptunCode(), phase);
+            }
+            userRepository.updateActivationLockout(activationCode.getNeptunCode(), attempts, blockedUntil, phase);
             throw new IllegalArgumentException("Invalid activation code");
         }
-        user.setIsActive(true);
-        userRepository.save(user);
+
+        // Correct code — activate and reset all lockout state
+        userRepository.activateAndClearLockout(activationCode.getNeptunCode());
         log.info("User {} activated", activationCode.getNeptunCode());
     }
 

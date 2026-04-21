@@ -10,4 +10,6 @@ public interface AdminService {
     void addUserByAdmin(AdminStudentDto adminStudentDto);
 
     List<AdminUserListDto> getAllUsers();
+
+    void unblockActivation(String neptunCode);
 }
