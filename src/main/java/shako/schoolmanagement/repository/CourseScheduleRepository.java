@@ -12,7 +12,6 @@ public interface CourseScheduleRepository extends JpaRepository<CourseSchedule, 
 
     List<CourseSchedule> findByCourse_CourseId(int courseId);
 
-    @Query("SELECT cs FROM CourseSchedule cs WHERE cs.course.courseId IN " +
-           "(SELECT e.course.courseId FROM Enrollment e WHERE e.student.neptunCode = :neptunCode AND e.isRegistered = true)")
+    @Query("SELECT cs FROM CourseSchedule cs JOIN FETCH cs.course c LEFT JOIN FETCH c.semester JOIN Enrollment e ON e.course = c WHERE e.student.neptunCode = :neptunCode AND e.isRegistered = true")
     List<CourseSchedule> findScheduleForStudent(String neptunCode);
 }

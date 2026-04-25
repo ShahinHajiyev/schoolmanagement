@@ -104,7 +104,7 @@ public class AdminServiceImpl implements AdminService {
         log.debug("Found {} users", users.size());
         return users.stream().map(user -> {
             String role = user.getRoles().isEmpty() ? "UNKNOWN" : user.getRoles().get(0).getRoleName();
-            return new AdminUserListDto(user.getNeptunCode(), user.getEmail(), role);
+            return new AdminUserListDto(user.getNeptunCode(), user.getEmail(), role, user.getActivationBlockPhase());
         }).collect(Collectors.toList());
     }
 

@@ -8,10 +8,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ScheduleEntryDto {
-    private String dayOfWeek;
+    private int dayOfWeek;
     private String startTime;
     private String endTime;
     private String courseName;
     private String teacherName;
     private String room;
+    private String date;
 }

@@ -4,10 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import shako.schoolmanagement.dto.*;
-import shako.schoolmanagement.dtomapper.StudentUserMapper;
-import shako.schoolmanagement.dtomapper.TeacherUserMapper;
-import shako.schoolmanagement.entity.Role;
 import shako.schoolmanagement.entity.Student;
 import shako.schoolmanagement.entity.Teacher;
 import shako.schoolmanagement.entity.User;
@@ -34,8 +32,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
-    private final StudentUserMapper studentUserMapper;
-    private final TeacherUserMapper teacherUserMapper;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final RoleRepository roleRepository;
     private final SemesterRepository semesterRepository;
@@ -46,8 +42,6 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(UserRepository userRepository,
                            StudentRepository studentRepository,
                            TeacherRepository teacherRepository,
-                           StudentUserMapper studentUserMapper,
-                           TeacherUserMapper teacherUserMapper,
                            BCryptPasswordEncoder bCryptPasswordEncoder,
                            RoleRepository roleRepository,
                            SemesterRepository semesterRepository,
@@ -56,8 +50,6 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
         this.studentRepository = studentRepository;
         this.teacherRepository = teacherRepository;
-        this.studentUserMapper = studentUserMapper;
-        this.teacherUserMapper = teacherUserMapper;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.roleRepository = roleRepository;
         this.semesterRepository = semesterRepository;
@@ -65,6 +57,7 @@ public class UserServiceImpl implements UserService {
         this.loginActivator = loginActivator;
     }
 
+    @Transactional
     @Override
     public void register(StudentUserDto dto) {
         log.info("Registering user with email: {}", dto.getEmail());
@@ -79,15 +72,17 @@ public class UserServiceImpl implements UserService {
 
         User savedUser;
         if (Boolean.TRUE.equals(userFromDB.getIsTeacher())) {
-            Teacher teacher = teacherUserMapper.dtoToTeacherEntity(dto);
-            populateRegistrationFields(teacher, dto, userFromDB);
+            Teacher teacher = teacherRepository.findById(userFromDB.getUserId())
+                    .orElseThrow(() -> new StudentNotExistsException("Teacher record not found"));
+            applyRegistrationFields(teacher, dto);
             teacher.setRoles(Collections.singletonList(roleRepository.findByRoleName("ROLE_USER")));
             teacherRepository.save(teacher);
             savedUser = teacher;
             log.info("Teacher registered: {}", teacher.getNeptunCode());
         } else {
-            Student student = studentUserMapper.dtoToStudentEntity(dto);
-            populateRegistrationFields(student, dto, userFromDB);
+            Student student = studentRepository.findById(userFromDB.getUserId())
+                    .orElseThrow(() -> new StudentNotExistsException("Student record not found"));
+            applyRegistrationFields(student, dto);
             student.setRoles(Collections.singletonList(roleRepository.findByRoleName("ROLE_USER")));
             student.setSemester(semesterRepository.findByName("first"));
             studentRepository.save(student);
@@ -100,9 +95,7 @@ public class UserServiceImpl implements UserService {
         log.info("Activation code sent to: {}", savedUser.getEmail());
     }
 
-    private void populateRegistrationFields(User user, StudentUserDto dto, User fromDB) {
-        user.setUserId(fromDB.getUserId());
-        user.setNeptunCode(fromDB.getNeptunCode().toUpperCase());
+    private void applyRegistrationFields(User user, StudentUserDto dto) {
         user.setPassword(bCryptPasswordEncoder.encode(dto.getPassword()));
         user.setCreated(LocalDateTime.now());
         user.setIsActive(false);
@@ -188,6 +181,15 @@ public class UserServiceImpl implements UserService {
         if (Boolean.TRUE.equals(user.getIsActive())) {
             log.info("Resend activation: user {} is already active", neptunCode);
             return;
+        }
+        if (user.getActivationBlockPhase() == 3) {
+            log.warn("Resend blocked — permanently locked account: {}", neptunCode);
+            throw new IllegalArgumentException("Account is permanently locked. Please contact admin.");
+        }
+        if (user.getActivationBlockedUntil() != null
+                && LocalDateTime.now().isBefore(user.getActivationBlockedUntil())) {
+            log.warn("Resend blocked — account locked until {} for: {}", user.getActivationBlockedUntil(), neptunCode);
+            throw new IllegalArgumentException("Account is temporarily locked. Try again after " + user.getActivationBlockedUntil());
         }
         String token = loginActivator.activationTokenGenerator();
         saveActivationCode(user, token);
